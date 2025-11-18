@@ -207,6 +207,7 @@ Around advice for FUN with ARGS."
 
 ;;;; simple use-package
 
+(use-package csv-mode)
 (use-package polymode)
 (use-package transient)
 

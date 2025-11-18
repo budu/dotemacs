@@ -8,7 +8,7 @@
          (agent-shell-google-make-gemini-config)))
  '(package-selected-packages
    '(adoc-mode agent-shell all-the-icons asdf blacken buttercup claude-code coffee-mode
-               company-box copilot counsel-projectile crystal-mode dap-mode direnv
+               company-box copilot counsel-projectile crystal-mode csv-mode dap-mode direnv
                dockerfile-mode doom-modeline doom-themes eat ein elisp-lint ement emmet-mode
                emojify exec-path-from-shell expand-region flycheck-posframe
                flyspell-correct-ivy forge geiser-racket golden-ratio gptel grip-mode helpful
