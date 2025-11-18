@@ -22,6 +22,8 @@
 (global-set-key "\C-c4"    (lambda () (interactive) (kill-new (buffer-file-name))))
 (global-set-key "\C-c5"    'mu/convert-region-to-percent-w-syntax)
 (global-set-key "\C-c0"    'mu/goto-personal-notes)
+(global-set-key "\C-cb"    'magit-blame)
+(global-set-key "\C-c\C-c" 'comment-or-uncomment-region)
 (global-set-key "\C-xl"    'magit-log-buffer-file)
 (global-set-key "\C-h"     'delete-backward-char)         ; displace help-command
 (global-set-key "\C-w"     'backward-kill-word)           ; displace kill-region
