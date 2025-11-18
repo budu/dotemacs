@@ -111,8 +111,10 @@ by matching line content. Only repeats the keystroke if the exact position is fo
 
 (defvar mu/magit/index-buffer-keymap
   (let ((map (make-sparse-keymap)))
-    ;; Bind RET and common editing keys
+    ;; Bind RET, C-j, and common editing keys
     (define-key map (kbd "RET") 'mu/magit/jump-to-actual-file)
+    (define-key map (kbd "C-j") 'mu/magit/jump-to-actual-file)
+    (define-key map (kbd "SPC") 'mu/magit/jump-to-actual-file)
     (define-key map (kbd "e") 'mu/magit/jump-to-actual-file)
     (define-key map (kbd "i") 'mu/magit/jump-to-actual-file)
     ;; Bind all printable characters
@@ -121,7 +123,7 @@ by matching line content. Only repeats the keystroke if the exact position is fo
         (define-key map (kbd (char-to-string (aref chars idx)))
           'mu/magit/jump-to-actual-file)))
     ;; Bind some punctuation and special keys
-    (dolist (key '(" " "." "," ";" ":" "'" "\"" "/" "\\" "-" "_" "=" "+" "*" "&" "%" "$" "#" "@" "!" "?" "<" ">" "[" "]" "{" "}" "(" ")"))
+    (dolist (key '("." "," ";" ":" "'" "\"" "/" "\\" "-" "_" "=" "+" "*" "&" "%" "$" "#" "@" "!" "?" "<" ">" "[" "]" "{" "}" "(" ")"))
       (define-key map (kbd key) 'mu/magit/jump-to-actual-file))
     map)
   "Keymap for magit index buffers that redirects most keys to jump to actual file.")
