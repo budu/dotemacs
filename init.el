@@ -1,4 +1,4 @@
-;;; package --- My Emacs init file
+;;; package --- My Emacs init file -*- lexical-binding: t; -*-
 ;;;
 ;;; Commentary:
 ;;;   This configuration is based on David Wilson's excellent Emacs From Scratch
