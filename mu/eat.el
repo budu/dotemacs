@@ -15,7 +15,9 @@
     (define-key eat-semi-char-mode-map (kbd "M-j") #'previous-window-any-frame)
     (define-key eat-semi-char-mode-map (kbd "M-k") #'next-window-any-frame)
     (define-key eat-char-mode-map (kbd "M-j") #'previous-window-any-frame)
-    (define-key eat-char-mode-map (kbd "M-k") #'next-window-any-frame)))
+    (define-key eat-char-mode-map (kbd "M-k") #'next-window-any-frame))
+  ;; Disable trailing whitespace highlighting in eat buffers
+  :hook (eat-mode . (lambda () (setq show-trailing-whitespace nil))))
 
 (provide 'mu/eat)
 
