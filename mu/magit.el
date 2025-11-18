@@ -2,6 +2,12 @@
 ;;; Commentary:
 ;;; Code:
 
+(with-eval-after-load 'magit
+  ;; Common choices:
+  ;;   -committerdate : sort by last commit time (descending)
+  ;;   -creatordate   : similar, often best for branches/tags
+  (setq magit-list-refs-sortby '("-committerdate")))
+
 ;; TODO: make it opt-in only
 (defun mu/magit/quicksave ()
   "Stage everything, commit and push."
