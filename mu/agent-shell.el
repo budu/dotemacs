@@ -26,6 +26,9 @@
 (setq agent-shell-openai-authentication
       (agent-shell-openai-make-authentication :login t))
 
+(setq agent-shell-google-authentication
+      (agent-shell-google-make-authentication :login t))
+
 (custom-set-variables
  '(agent-shell-agent-configs
    (list (agent-shell-anthropic-make-claude-code-config)
