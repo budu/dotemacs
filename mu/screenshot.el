@@ -8,14 +8,11 @@
 ;;
 ;;; Code:
 
-(use-package screenshot
-  :ensure nil
-  :quelpa (screenshot :fetcher github
-                      :repo "tecosaur/screenshot"
-                      :branch "master"
-                      :files ("screenshot.el")))
+(defvar mu/cg-map)
 
-(define-key mu/cg-map (kbd "s") 'screenshot)
+(use-package screenshot
+  :vc (:url "https://github.com/tecosaur/screenshot")
+  :bind (:map mu/cg-map ("s" . screenshot)))
 
 (provide 'mu/screenshot)
 

@@ -14,8 +14,7 @@
 ;;; Update:
 ;;;   package-refresh-contents
 ;;;   package-upgrade-all or package-upgrade for individual package
-;;;   quelpa-self-upgrade
-;;;   quelpa-upgrade-all
+;;;   package-vc-upgrade-all or package-vc-upgrade for individual package
 ;;;
 ;;; Code:
 
@@ -39,9 +38,6 @@
 
 (setq use-package-always-ensure t)
 
-(use-package quelpa)
-(use-package quelpa-use-package)
-
 (use-package exec-path-from-shell
   :ensure t
   :config
@@ -61,11 +57,7 @@
 ;;;; shims
 
 (use-package asdf
-  :ensure nil
-  :quelpa (asdf :fetcher github
-                :repo "tabfugnic/asdf.el"
-                :branch "main"
-                :files ("asdf.el"))
+  :vc (:url "https://github.com/tabfugnic/asdf.el")
   :config
   (setq asdf-binary "/opt/asdf-vm/bin/asdf")
   (asdf-enable))
