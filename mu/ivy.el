@@ -34,7 +34,9 @@
   :init (ivy-rich-mode 1))
 
 (use-package ivy-posframe
+  :after ivy
   :config
+  (require 'ivy-overlay nil t)
   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
   (setq ivy-truncate-lines nil)
   (ivy-posframe-mode 1)

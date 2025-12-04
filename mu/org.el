@@ -324,4 +324,62 @@ If ELEMENT is provided, use it as the starting point for finding the block."
 
 (define-key mu/cg-map (kbd "b") 'mu/org/copy-block-at-point)
 
+(defun mu/org--project-files ()
+  "Get project files using projectile or project.el."
+  (let ((default-directory (mu/get-project-dir)))
+    (cond
+     ((and (boundp 'projectile-mode)
+           projectile-mode
+           (projectile-project-p))
+      (mapcar (lambda (f)
+                (file-relative-name f (projectile-project-root)))
+              (projectile-current-project-files)))
+     ((fboundp 'project-current)
+      (when-let ((proj (project-current)))
+        (mapcar (lambda (f) (file-relative-name f (project-root proj)))
+                (project-files proj))))
+     (t nil))))
+
+(defvar-local mu/org--file-completion-active nil
+  "Non-nil when file completion is active.")
+
+(defun mu/org/file-completion-at-point ()
+  "Complete project files after @."
+  (when-let* ((triggered (eq (char-before) ?@))
+              (start (point))
+              (end (save-excursion
+                     (skip-chars-forward "[:alnum:]/_.-")
+                     (point)))
+              (prefix (buffer-substring start end))
+              (files (mu/org--project-files)))
+    (list start end
+          (seq-filter
+           (lambda (f) (string-prefix-p prefix (file-name-nondirectory f)))
+           files)
+          :exclusive 'no
+          :annotation-function
+          (lambda (_candidate) " [file]")
+          :exit-function
+          (lambda (_status _string)
+            (setq mu/org--file-completion-active nil)
+            (insert " ")))))
+
+(defun mu/org--trigger-completion-at-point ()
+  "Trigger completion when @ is typed."
+  (when (eq (char-before) ?@)
+    (setq mu/org--file-completion-active t)
+    (run-with-idle-timer 0 nil #'completion-at-point)))
+
+(define-minor-mode mu/org-file-completion-mode
+  "Toggle file completion with @ prefix in org-mode."
+  :lighter " @Compl"
+  (if mu/org-file-completion-mode
+      (progn
+        (add-hook 'completion-at-point-functions #'mu/org/file-completion-at-point nil t)
+        (add-hook 'post-self-insert-hook #'mu/org--trigger-completion-at-point nil t))
+    (remove-hook 'completion-at-point-functions #'mu/org/file-completion-at-point t)
+    (remove-hook 'post-self-insert-hook #'mu/org--trigger-completion-at-point t)))
+
+(add-hook 'org-mode-hook #'mu/org-file-completion-mode)
+
 ;;; org.el ends here

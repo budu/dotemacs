@@ -189,9 +189,24 @@ RESULT is the return value from the original function."
         (remhash (current-buffer) copilot-logger--pending-requests))))
   result)
 
+;;; Copilot inhibition for file completion
+
+(defun mu/copilot--should-inhibit-completion ()
+  "Return non-nil if copilot should be inhibited in current context."
+  (and (boundp 'mu/org--file-completion-active)
+       mu/org--file-completion-active))
+
+(defun mu/copilot--maybe-inhibit-completion (orig-fn callback)
+  "Inhibit copilot during file completion in org-mode.
+ORIG-FN is the original function, CALLBACK is passed through."
+  (if (mu/copilot--should-inhibit-completion)
+      nil  ; Don't call copilot when file completion is active
+    (funcall orig-fn callback)))
+
 ;;; Install advice
 
 (with-eval-after-load 'copilot
+  (advice-add 'copilot--get-completion :around #'mu/copilot--maybe-inhibit-completion)
   (advice-add 'copilot--get-completion :around #'copilot-logger--before-get-completion)
   (advice-add 'copilot--show-completion :after #'copilot-logger--after-show-completion)
   (advice-add 'copilot-clear-overlay :after #'copilot-logger--after-clear-overlay)
