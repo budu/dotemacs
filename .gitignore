@@ -29,3 +29,5 @@ local-vars.el
 forge-database*
 eln-cache
 tramp
+copilot-completions.log
+history
