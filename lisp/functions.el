@@ -95,20 +95,49 @@ The path is calculated relative to the project root, excluding nb-notes director
       (kmacro-end-macro arg)
     (kmacro-start-macro arg)))
 
+(defun mu/file-path-at-point ()
+  "Extract @file-path at point, including dots, slashes, underscores, and hyphens."
+  (save-excursion
+    ;; If we're on '@', move forward one char
+    (when (eq (char-after) ?@)
+      (forward-char 1))
+    ;; First move to end of file path if we're in the middle
+    (skip-chars-forward "a-zA-Z0-9-_./")
+    (let ((end (point)))
+      ;; Then move backwards to find the start
+      (skip-chars-backward "a-zA-Z0-9-_./")
+      ;; Check if there's an @ just before the start
+      (when (and (> (point) (point-min))
+                 (eq (char-before) ?@))
+        (buffer-substring-no-properties (point) end)))))
+
 (defun mu/open-at-point ()
   "Open the thing at point, if possible.
    If the thing at point looks like a commit hash, open the
    corresponding commit in Magit. If it looks like a URL, open it in
-   the browser."
+   the browser. If it starts with @, treat it as a project file path."
   (interactive)
   (let ((thing (thing-at-point 'url)))
     (if thing (browse-url-at-point)
-      (let* ((thing (thing-at-point 'symbol))
+      (let* ((file-path (mu/file-path-at-point))
+             (thing (thing-at-point 'symbol))
              (toplevel (magit-toplevel))
              (parent-dir (when (and toplevel
                                   (string-match-p "/nb-notes/?$" toplevel))
                           (file-name-directory (directory-file-name toplevel)))))
-        (cond ((string-match-p "^[0-9a-f]\\{7,20\\}$" thing)
+        (cond (file-path
+               ;; Handle @file paths
+               (let* ((project-root (or (and (fboundp 'projectile-project-root)
+                                            (projectile-project-root))
+                                       (and (fboundp 'project-current)
+                                            (when-let ((proj (project-current)))
+                                              (project-root proj)))
+                                       default-directory))
+                      (full-path (expand-file-name file-path project-root)))
+                 (if (file-exists-p full-path)
+                     (find-file full-path)
+                   (message "File not found: %s" full-path))))
+              ((string-match-p "^[0-9a-f]\\{7,20\\}$" thing)
                (if parent-dir
                    (let ((default-directory parent-dir))
                      (magit-show-commit thing))
