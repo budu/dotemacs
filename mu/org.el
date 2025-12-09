@@ -17,7 +17,7 @@
   (define-key mu/org-map (kbd "n") 'org-priority-down)
   (define-key mu/org-map (kbd "w") 'mu/org/copy-as-markdown)
   (add-hook 'org-mode-hook #'visual-line-mode)
-  (setq org-agenda-files '("~/cg/" "~/org/" "~/projects/"))
+  (setq org-agenda-files '("~/cg/" "~/org/" "~/projects/" "~/.emacs.d"))
   (setq org-hide-emphasis-markers t)
   (setq org-tags-column -20)  ; Adjust the number to control tag position
   (setq org-auto-align-tags t)
