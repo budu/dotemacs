@@ -6,12 +6,27 @@
 
 (defconst mu/minuet/openai-api-key (getenv "CHATGPT_EMACS_KEY"))
 
-(defun mu/minuet/not-after-trigger-char-p ()
-  "Return non-nil if cursor is not on a space, newline, or closing paren/bracket.
-This blocks auto-suggestions unless the cursor is positioned on one of these trigger characters."
-  (let ((char-at-point (char-after)))
-    (not (or (null char-at-point)  ; end of buffer
-             (memq char-at-point '(?\s ?\t ?\n ?\) ?\] ?\}))))))
+(defun mu/minuet/should-block-completion-p ()
+  "Return non-nil if auto-completion should be blocked at point."
+  (let ((char-at-point (char-after))
+        (char-before-point (char-before)))
+    (not (or ;; Condition 1: End of buffer - allow completion
+             (null char-at-point)
+
+             ;; Condition 2: Cursor ON closing delimiters - allow completion
+             ;; Triggers when current char is: ), ], }
+             (memq char-at-point '(?\) ?\] ?\}))
+
+             ;; Condition 3: Cursor AFTER whitespace - allow completion
+             ;; Triggers when previous char is: space, tab, newline
+             ;; Exceptions:
+             ;;   - at EOL after tab, block completion
+             ;;   - after newline when current char is not newline, block completion
+             (and (memq char-before-point '(?\s ?\t ?\n))
+                  (not (and (eq char-before-point ?\n)
+                            (not (eq char-at-point ?\n))))
+                  (or (not (eolp))
+                      (memq char-before-point '(?\s ?\n))))))))
 
 (use-package minuet
   :bind
@@ -47,7 +62,7 @@ This blocks auto-suggestions unless the cursor is positioned on one of these tri
    minuet-auto-suggestion-debounce-delay 0.3  ; Wait 0.4s after typing stops
    minuet-auto-suggestion-throttle-delay 1.0  ; Minimum 1s between requests
    minuet-auto-suggestion-block-predicates '(minuet-evil-not-insert-state-p
-                                             mu/minuet/not-after-trigger-char-p))
+                                             mu/minuet/should-block-completion-p))
 
   ;; Customize the appearance of suggestions
   (custom-set-faces
