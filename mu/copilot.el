@@ -8,7 +8,9 @@
 ;;
 ;;; Code:
 
+;; NOTE: DISABLED and replaced by minuet
 (use-package copilot
+  :disabled t
   :hook ((prog-mode . copilot-mode)
          (text-mode . copilot-mode)
          (git-commit-mode . copilot-mode)
