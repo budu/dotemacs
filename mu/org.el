@@ -382,4 +382,78 @@ If ELEMENT is provided, use it as the starting point for finding the block."
 
 (add-hook 'org-mode-hook #'mu/org-file-completion-mode)
 
+(defun mu/org/move-to-done-section ()
+  "Move the current task to the DONE section, creating it if necessary.
+The DONE section is organized by week (DONE W##) and date (DONE <date>)."
+  (interactive)
+  (unless (org-at-heading-p)
+    (org-back-to-heading t))
+
+  ;; Navigate to the root-level heading
+  (while (> (org-outline-level) 1)
+    (org-up-heading-safe))
+
+  ;; Change to DONE status if not already
+  (unless (string= (org-get-todo-state) "DONE")
+    (org-todo "DONE"))
+
+  (let* ((begin (point))
+         (end (save-excursion
+                (org-end-of-subtree t t)
+                (point)))
+         (entry-text (buffer-substring-no-properties begin end))
+         (week-str (format "W%02d" (string-to-number (format-time-string "%V"))))
+         (date-str (format-time-string "<%Y-%m-%d %a>"))
+         done-heading
+         week-heading
+         date-heading)
+
+    ;; Delete the current entry
+    (delete-region begin end)
+
+    ;; Go to end of buffer to find or create DONE section
+    (goto-char (point-max))
+
+    ;; Look for "* DONE W##" heading
+    (goto-char (point-min))
+    (if (re-search-forward (format "^\\* ~DONE~ %s$" week-str) nil t)
+        (setq week-heading (point))
+      ;; Create week heading at end of buffer
+      (goto-char (point-max))
+      (unless (bolp) (insert "\n"))
+      (insert (format "* ~DONE~ %s\n" week-str))
+      (setq week-heading (point)))
+
+    ;; Look for "** DONE <date>" under the week heading
+    (goto-char week-heading)
+    (if (re-search-forward (format "^\\*\\* DONE %s$" (regexp-quote date-str))
+                          (save-excursion (org-end-of-subtree t t) (point))
+                          t)
+        (progn
+          ;; Found existing date heading, go to end of its subtree
+          (org-back-to-heading t)
+          (org-end-of-subtree t t)
+          (setq date-heading (point)))
+      ;; Create date heading under week heading
+      (org-back-to-heading t)
+      (org-end-of-subtree t t)
+      (insert (format "** DONE %s" date-str))
+      (setq date-heading (point)))
+
+    ;; Insert the entry after any existing tasks under the date heading
+    ;; Adjust the heading level (add two stars since date heading is level 2)
+    (let ((insert-pos (point)))
+      (insert "\n" (replace-regexp-in-string "^\\(\\*+\\) " "\\1** "
+                                             (string-trim-left entry-text)))
+
+      ;; Collapse the moved task
+      (goto-char insert-pos)
+      (forward-line 1)
+      (org-flag-subtree t))
+
+    (message "Moved task to DONE section")))
+
+(with-eval-after-load 'org
+  (define-key mu/org-map (kbd "d") 'mu/org/move-to-done-section))
+
 ;;; org.el ends here
