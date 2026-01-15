@@ -40,6 +40,15 @@
   :init (setq counsel-projectile-switch-project-action #'projectile-vc)
   :config (counsel-projectile-mode))
 
+(defun mu/projectile--with-parent-project (orig-fun &rest args)
+  "Advice to run counsel-projectile commands from parent directory when in nb-notes.
+ORIG-FUN is the original function being advised, ARGS are its arguments."
+  (let ((default-directory (mu/get-project-dir)))
+    (apply orig-fun args)))
+
+(advice-add 'counsel-projectile-find-file :around #'mu/projectile--with-parent-project)
+(advice-add 'counsel-projectile-rg :around #'mu/projectile--with-parent-project)
+
 (provide 'mu/projectile)
 
 ;;; projectile.el ends here
