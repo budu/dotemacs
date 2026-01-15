@@ -9,7 +9,10 @@
   (setq magit-list-refs-sortby '("-committerdate"))
 
   ;; Open magit-status in the current window
-  (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+
+  ;; Add custom keybinding for magit-checkout in magit-status-mode
+  (define-key magit-status-mode-map (kbd "`") 'magit-checkout))
 
 ;; TODO: make it opt-in only
 (defun mu/magit/quicksave ()
