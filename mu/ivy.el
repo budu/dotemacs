@@ -37,7 +37,8 @@
   :after ivy
   :config
   (require 'ivy-overlay nil t)
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+  (setq ivy-posframe-display-functions-alist '((swiper . ivy-display-function-fallback)
+                                                (t . ivy-posframe-display)))
   (setq ivy-truncate-lines nil)
   (ivy-posframe-mode 1)
   (set-face-attribute 'ivy-posframe nil
