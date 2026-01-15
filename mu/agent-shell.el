@@ -219,20 +219,26 @@ With prefix ARG, switch to agent-shell buffer after sending."
       (message "Cursor is not inside a prompt block"))))
 
 (defun mu/agent-shell-send-prompt-from-notes ()
-  "Send a prompt from nb-notes/current.org to agent-shell.
+  "Send a prompt from nb-notes/prompts.org to agent-shell.
+If prompts.org is not found, fallback to nb-notes/current.org.
 Prompts are stored under the '* :robot: Prompts' heading.
 Each sub-heading is a prompt - uses the heading title if no content,
 or the first #+begin_quote prompt block if present."
   (interactive)
   (let* ((project-dir (mu/get-project-dir))
-         (notes-file (expand-file-name "nb-notes/current.org" project-dir))
+         (prompts-file (expand-file-name "nb-notes/prompts.org" project-dir))
+         (current-file (expand-file-name "nb-notes/current.org" project-dir))
+         (notes-file (cond
+                      ((file-exists-p prompts-file) prompts-file)
+                      ((file-exists-p current-file) current-file)
+                      (t nil)))
          (agent-buffer (mu/get-agent-shell-buffer)))
     ;; Check agent buffer exists
     (unless agent-buffer
       (user-error "No agent-shell buffer found. Start one first with M-x agent-shell-anthropic-start-claude-code"))
     ;; Check notes file exists
-    (unless (file-exists-p notes-file)
-      (user-error "Notes file not found: %s" notes-file))
+    (unless notes-file
+      (user-error "Notes file not found. Tried: %s and %s" prompts-file current-file))
     ;; Parse prompts from notes file
     (let ((prompts-alist '()))
       (with-temp-buffer
