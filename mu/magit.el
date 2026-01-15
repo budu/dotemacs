@@ -53,90 +53,20 @@
 (global-set-key (kbd "C-x g") 'mu/magit/open-parent)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 
-(defun mu/magit/find-line-by-content (line-text start-line)
-  "Find a line matching LINE-TEXT in the current buffer.
-First searches forward from START-LINE, then from the beginning if not found.
-Returns the position of the beginning of the matching line, or nil if not found."
-  (let ((found-pos nil))
-    ;; First try: search forward from the original line
-    (goto-char (point-min))
-    (forward-line (1- start-line))
-    (when (search-forward line-text nil t)
-      (beginning-of-line)
-      (when (string= (buffer-substring-no-properties
-                     (line-beginning-position)
-                     (line-end-position))
-                    line-text)
-        (setq found-pos (point))))
-    ;; If not found forward, try searching from the beginning
-    (unless found-pos
-      (goto-char (point-min))
-      (when (search-forward line-text nil t)
-        (beginning-of-line)
-        (when (string= (buffer-substring-no-properties
-                       (line-beginning-position)
-                       (line-end-position))
-                      line-text)
-          (setq found-pos (point)))))
-    found-pos))
-
-(defun mu/magit/replay-keystroke-if-valid (key target-col)
-  "Replay KEY at the current position if TARGET-COL is valid for the current line.
-Only replays if we can successfully move to TARGET-COL on the current line."
-  (when (and key (> (length key) 0))
-    (let ((moved-col (move-to-column target-col))
-          (line-length (- (line-end-position) (line-beginning-position))))
-      (when (and (<= target-col line-length)
-                 (= moved-col target-col))
-        (setq unread-command-events
-              (append (listify-key-sequence key) unread-command-events))))))
-
-(defun mu/magit/jump-to-actual-file ()
-  "Jump from a magit blob buffer (like ~index~ buffers) to the actual file.
-Closes the index buffer and tries to find the same position in the actual file
-by matching line content. Only repeats the keystroke if the exact position is found."
-  (interactive)
-  (if (and (bound-and-true-p magit-buffer-file-name)
-           (bound-and-true-p magit-blob-mode))
-      (let ((file magit-buffer-file-name)
-            (target-col (current-column))
-            (key (this-command-keys-vector))
-            (index-buffer (current-buffer))
-            (current-line-text (buffer-substring-no-properties
-                                (line-beginning-position)
-                                (line-end-position)))
-            (start-line (line-number-at-pos)))
-        ;; Kill the index buffer
-        (kill-buffer index-buffer)
-        ;; Open the real file
-        (find-file file)
-        ;; Try to find the same line content in the actual file
-        (let ((found-pos (mu/magit/find-line-by-content current-line-text start-line)))
-          (if found-pos
-              (progn
-                (goto-char found-pos)
-                (mu/magit/replay-keystroke-if-valid key target-col))
-            ;; Fallback: go to original line number if content search failed
-            (goto-char (point-min))
-            (forward-line (1- start-line)))))
-    (message "Not in a magit blob buffer")))
-
 (defvar mu/magit/index-buffer-keymap
   (let ((map (make-sparse-keymap)))
-    ;; Bind RET, C-j, and common editing keys
-    (define-key map (kbd "RET") 'mu/magit/jump-to-actual-file)
-    (define-key map (kbd "C-j") 'mu/magit/jump-to-actual-file)
-    (define-key map (kbd "SPC") 'mu/magit/jump-to-actual-file)
-    (define-key map (kbd "e") 'mu/magit/jump-to-actual-file)
-    (define-key map (kbd "i") 'mu/magit/jump-to-actual-file)
-    ;; Bind all printable characters
+    ;; Bind common navigation/editing keys
+    (define-key map (kbd "RET") 'magit-blob-visit-file)
+    (define-key map (kbd "C-j") 'magit-blob-visit-file)
+    (define-key map (kbd "SPC") 'magit-blob-visit-file)
+    ;; Bind all letters and numbers
     (let ((chars "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"))
       (dotimes (idx (length chars))
         (define-key map (kbd (char-to-string (aref chars idx)))
-          'mu/magit/jump-to-actual-file)))
-    ;; Bind some punctuation and special keys
+          'magit-blob-visit-file)))
+    ;; Bind common punctuation
     (dolist (key '("." "," ";" ":" "'" "\"" "/" "\\" "-" "_" "=" "+" "*" "&" "%" "$" "#" "@" "!" "?" "<" ">" "[" "]" "{" "}" "(" ")"))
-      (define-key map (kbd key) 'mu/magit/jump-to-actual-file))
+      (define-key map (kbd key) 'magit-blob-visit-file))
     map)
   "Keymap for magit index buffers that redirects most keys to jump to actual file.")
 
