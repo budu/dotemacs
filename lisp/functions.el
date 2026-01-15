@@ -137,13 +137,21 @@ The path is calculated relative to the project root, excluding nb-notes director
                  (if (file-exists-p full-path)
                      (find-file full-path)
                    (message "File not found: %s" full-path))))
-              ((string-match-p "^[0-9a-f]\\{7,20\\}$" thing)
+              ((and thing (string-match-p "^[0-9a-f]\\{7,20\\}$" thing))
                (if parent-dir
                    (let ((default-directory parent-dir))
                      (magit-show-commit thing))
                  (magit-show-commit thing)))
-              ((string-match-p "^[0-9a-f]\\{21,41\\}$" thing)
+              ((and thing (string-match-p "^[0-9a-f]\\{21,41\\}$" thing))
                (browse-url (format "https://github.com/codegenome/reservotron/commit/%s" thing)))
+              ;; Fallback to magit functions for opening worktree files
+              ((and (derived-mode-p 'magit-diff-mode 'magit-revision-mode 'magit-status-mode)
+                    (fboundp 'magit-diff-visit-worktree-file))
+               (magit-diff-visit-worktree-file))
+              ;; In a blob/versioned file buffer, visit the worktree file
+              ((and (fboundp 'magit-blob-visit-file)
+                    (magit-file-relative-name))
+               (magit-blob-visit-file))
               (t (message "Nothing to open at point for: %s" thing)))))))
 
 (defun mu/xdg-open ()
