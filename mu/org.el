@@ -458,4 +458,52 @@ The DONE section is organized by week (DONE W##) and date (DONE <date>)."
 (with-eval-after-load 'org
   (define-key mu/org-map (kbd "d") 'mu/org/move-to-done-section))
 
+(defun mu/org/forward-sexp (&optional arg)
+  "Jump over org-mode blocks when using forward-sexp.
+If point is at the beginning of a block (#+begin_*), jump to the end.
+Otherwise, use the default forward-sexp behavior.
+ARG specifies how many times to move forward (default 1)."
+  (interactive "^p")
+  (setq arg (or arg 1))
+  (if (< arg 0)
+      (mu/org/backward-sexp (- arg))
+    (dotimes (_ arg)
+      (let ((elem (org-element-context)))
+        (if (and (memq (org-element-type elem)
+                       '(src-block example-block quote-block verse-block
+                         center-block special-block export-block comment-block))
+                 (save-excursion
+                   (beginning-of-line)
+                   (looking-at "^[ \t]*#\\+begin_")))
+            ;; At beginning of a block, jump to end
+            (goto-char (org-element-property :end elem))
+          ;; Not at block start, use default forward-sexp
+          (forward-sexp 1))))))
+
+(defun mu/org/backward-sexp (&optional arg)
+  "Jump backward over org-mode blocks when using backward-sexp.
+If point is at the end of a block (#+end_*), jump to the beginning.
+Otherwise, use the default backward-sexp behavior.
+ARG specifies how many times to move backward (default 1)."
+  (interactive "^p")
+  (setq arg (or arg 1))
+  (if (< arg 0)
+      (mu/org/forward-sexp (- arg))
+    (dotimes (_ arg)
+      (let ((elem (org-element-context)))
+        (if (and (memq (org-element-type elem)
+                       '(src-block example-block quote-block verse-block
+                         center-block special-block export-block comment-block))
+                 (save-excursion
+                   (beginning-of-line)
+                   (looking-at "^[ \t]*#\\+end_")))
+            ;; At end of a block, jump to beginning
+            (goto-char (org-element-property :begin elem))
+          ;; Not at block end, use default backward-sexp
+          (backward-sexp 1))))))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "C-M-f") 'mu/org/forward-sexp)
+  (define-key org-mode-map (kbd "C-M-b") 'mu/org/backward-sexp))
+
 ;;; org.el ends here
