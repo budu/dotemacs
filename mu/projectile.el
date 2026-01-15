@@ -40,14 +40,25 @@
   :init (setq counsel-projectile-switch-project-action #'projectile-vc)
   :config (counsel-projectile-mode))
 
-(defun mu/projectile--with-parent-project (orig-fun &rest args)
-  "Advice to run counsel-projectile commands from parent directory when in nb-notes.
-ORIG-FUN is the original function being advised, ARGS are its arguments."
-  (let ((default-directory (mu/get-project-dir)))
-    (apply orig-fun args)))
+(defun mu/counsel-projectile-find-file-dwim ()
+  "Find file in parent project, or current directory with C-u.
+With C-u, uses counsel-file-jump for fuzzy matching in current directory."
+  (interactive)
+  (if current-prefix-arg
+      (counsel-file-jump nil default-directory)
+    (let ((default-directory (mu/get-project-dir)))
+      (call-interactively #'counsel-projectile-find-file))))
 
-(advice-add 'counsel-projectile-find-file :around #'mu/projectile--with-parent-project)
-(advice-add 'counsel-projectile-rg :around #'mu/projectile--with-parent-project)
+(defun mu/counsel-projectile-rg-dwim ()
+  "Search in parent project, or current directory with C-u."
+  (interactive)
+  (if current-prefix-arg
+      (counsel-rg nil default-directory)
+    (let ((default-directory (mu/get-project-dir)))
+      (call-interactively #'counsel-projectile-rg))))
+
+(global-set-key (kbd "C-S-f") #'mu/counsel-projectile-find-file-dwim)
+(global-set-key (kbd "C-M-S-f") #'mu/counsel-projectile-rg-dwim)
 
 (provide 'mu/projectile)
 
