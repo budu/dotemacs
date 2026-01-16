@@ -225,6 +225,19 @@ First tries Flycheck overlays, then scans current line, and prompts as fallback.
          ("C-c C-t" . 'robe-test)
          ("C-c C-v" . 'robe-jump)))
 
+(defun mu/rubocop-autocorrect-silent ()
+  "Run rubocop -A on the current file silently.
+Auto-corrects all offenses and reloads the buffer without showing any output.
+Review changes through magit."
+  (interactive)
+  (let ((file-name (buffer-file-name)))
+    (if (not file-name)
+        (message "Buffer is not visiting a file")
+      (message "Running rubocop -A on %s..." (file-name-nondirectory file-name))
+      (call-process "rubocop" nil nil nil "-A" file-name)
+      (revert-buffer t t t)
+      (message "RuboCop auto-correction complete"))))
+
 (use-package rubocop
   :init
   (add-hook 'ruby-mode-hook 'rubocop-mode)

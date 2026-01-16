@@ -18,7 +18,7 @@
 (global-set-key [C--]      'text-scale-decrease)     ; displace negative-argument
 (global-set-key "\C-c1"    'sort-lines)
 (global-set-key "\C-c2"    'mu/sort-words)
-(global-set-key "\C-c3"    'rubocop-autocorrect-current-file)
+(global-set-key "\C-c3"    'mu/rubocop-autocorrect-silent)
 (global-set-key "\C-c4"    (lambda () (interactive) (kill-new (buffer-file-name))))
 (global-set-key "\C-c5"    'mu/convert-region-to-percent-w-syntax)
 (global-set-key "\C-c0"    'mu/goto-personal-notes)
