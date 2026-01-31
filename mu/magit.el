@@ -84,4 +84,15 @@ This makes most self-insert keys jump to the actual file for editing."
 ;; Try using magit-blob-mode-hook instead, which runs after the mode is fully enabled
 (add-hook 'magit-blob-mode-hook 'mu/magit/setup-index-buffer-keymap)
 
+(defun mu/magit/auto-visit-staged-file ()
+  "Automatically visit the real file and close blob buffer if viewing staged content.
+Checks if buffer name ends with ~{index}~ which indicates a staged blob."
+  (when (and (buffer-name)
+             (string-match-p "~{index}~\\'" (buffer-name)))
+    (let ((blob-buffer (current-buffer)))
+      (magit-blob-visit-file)
+      (kill-buffer blob-buffer))))
+
+(add-hook 'magit-blob-mode-hook 'mu/magit/auto-visit-staged-file)
+
 ;;; magit.el ends here
