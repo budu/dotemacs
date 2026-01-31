@@ -17,6 +17,16 @@
 (require 'agent-shell-anthropic)
 (require 'agent-shell-openai)
 
+(custom-set-variables
+ '(agent-shell-agent-configs
+   (list (agent-shell-anthropic-make-claude-code-config)
+         (agent-shell-openai-make-codex-config)
+         (agent-shell-google-make-gemini-config)
+         (agent-shell-opencode-make-agent-config)
+         )))
+
+(setq agent-shell-anthropic-default-model-id "sonnet")
+
 (setq agent-shell-anthropic-claude-environment
       (agent-shell-make-environment-variables :inherit-env t))
 
@@ -29,11 +39,13 @@
 (setq agent-shell-google-authentication
       (agent-shell-google-make-authentication :login t))
 
-(custom-set-variables
- '(agent-shell-agent-configs
-   (list (agent-shell-anthropic-make-claude-code-config)
-         (agent-shell-openai-make-codex-config)
-         (agent-shell-google-make-gemini-config))))
+(with-eval-after-load 'agent-shell
+  (setq agent-shell-agent-configs
+        (mapcar (lambda (cfg)
+                  (when (eq (map-elt cfg :identifier) 'opencode)
+                    (map-put! cfg :default-model-id (lambda () "opencode/glm-4.7-free")))
+                  cfg)
+                agent-shell-agent-configs)))
 
 ;;;; Helper Functions
 
