@@ -4,8 +4,6 @@
 ;;;   AI-powered code completion with multiple LLM backend support
 ;;; Code:
 
-(defconst mu/minuet/openai-api-key (getenv "CHATGPT_EMACS_KEY"))
-
 (defun mu/minuet/should-block-completion-p ()
   "Return non-nil if auto-completion should be blocked at point."
   (let ((char-at-point (char-after))
@@ -45,20 +43,22 @@
          (text-mode . minuet-auto-suggestion-mode)
          (git-commit-mode . minuet-auto-suggestion-mode))
   :config
-  ;; Set the API key for OpenAI
-  (setenv "OPENAI_API_KEY" mu/minuet/openai-api-key)
-
   ;; Configure OpenAI backend with gpt-4o model
-  (setq minuet-provider 'openai-fim-compatible)
-  (plist-put minuet-openai-options :model "gpt-4.1-mini")
-  (minuet-set-optional-options minuet-openai-options :max_completion_tokens 128)
+  (setq minuet-provider 'openai)
+  ; (plist-put minuet-openai-options :model "gpt-4.1-mini")
+  (plist-put minuet-openai-options :model "gpt-5-mini")
+  (plist-put minuet-openai-options :api-key "CHATGPT_EMACS_KEY")
+  (minuet-set-optional-options minuet-openai-options :max_completion_tokens 32)
+  (minuet-set-optional-options minuet-openai-options :reasoning_effort "minimal")
 
   ;; Customize completion behavior
   (setq
-   minuet-context-window 16000              ; Maximum context characters to send
-   minuet-context-ratio 0.75                ; 75% context before cursor, 25% after
+   ;; NOTE: copilot sent about 500 chars so around 128 tokens
+   ;; here we'll try using double that
+   minuet-context-window 1000               ; Maximum context characters to send
+   minuet-context-ratio 1.0                 ; Percentage of context before cursor
    minuet-request-timeout 3                 ; Timeout in seconds
-   minuet-n-completions 3                   ; Number of suggestions to generate
+   minuet-n-completions 1                   ; Number of suggestions to generate
    minuet-auto-suggestion-debounce-delay 0.3  ; Wait 0.4s after typing stops
    minuet-auto-suggestion-throttle-delay 1.0  ; Minimum 1s between requests
    minuet-auto-suggestion-block-predicates '(minuet-evil-not-insert-state-p
