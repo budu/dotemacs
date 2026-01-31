@@ -184,6 +184,7 @@ First tries Flycheck overlays, then scans current line, and prompts as fallback.
   :bind (:map ruby-mode-map
          ("M-." . mu/ruby/find-definition)
          ("C-M-." . 'mu/ruby/find-references)
+         ("C-c ." . rspec-toggle-spec-and-target)
          ("C-c C-e" . "end\C-j")
          ("C-M-h" . er/mark-ruby-block-up)
          ("C-M-p" . er/ruby-backward-up)
@@ -250,6 +251,7 @@ Review changes through magit."
 (use-package slim-mode
   :bind (:map slim-mode-map
          ("M-." . mu/ruby/find-definition)
+         ("C-c ." . rspec-toggle-spec-and-target)
          ("C-c '" . 'ruby-toggle-string-quotes)
          ("C-c 9" . 'mu/i18n/goto-translation-file)
          ("C-c i" . 'mu/i18n/extract-translation)
