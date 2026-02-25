@@ -45,6 +45,24 @@
                   cfg)
                 agent-shell-agent-configs)))
 
+;;;; Transcript Scrubbing
+
+(defun mu/agent-shell-scrub-transcript ()
+  "Scrub secrets from transcripts when an agent-shell buffer is killed."
+  (when (and (derived-mode-p 'agent-shell-mode)
+             (bound-and-true-p agent-shell--transcript-file))
+    (let ((dir (file-name-directory
+                (directory-file-name
+                 (file-name-directory agent-shell--transcript-file)))))
+      (let ((proc (start-process "scrub-transcripts" nil
+                                 "scrub-transcripts" "--apply" "--dir" dir)))
+        (set-process-sentinel
+         proc (lambda (_proc event)
+                (unless (string-match-p "finished" event)
+                  (message "scrub-transcripts failed: %s" (string-trim event)))))))))
+
+(add-hook 'kill-buffer-hook #'mu/agent-shell-scrub-transcript)
+
 ;;;; Helper Functions
 
 (defun mu/get-agent-shell-buffer ()
