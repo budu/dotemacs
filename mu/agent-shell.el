@@ -25,8 +25,6 @@
          (agent-shell-opencode-make-agent-config)
          )))
 
-(setq agent-shell-anthropic-default-model-id "sonnet")
-
 (setq agent-shell-anthropic-claude-environment
       (agent-shell-make-environment-variables :inherit-env t))
 
