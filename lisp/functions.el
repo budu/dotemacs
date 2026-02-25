@@ -143,7 +143,10 @@ The path is calculated relative to the project root, excluding nb-notes director
                      (magit-show-commit thing))
                  (magit-show-commit thing)))
               ((and thing (string-match-p "^[0-9a-f]\\{21,41\\}$" thing))
-               (browse-url (format "https://github.com/codegenome/reservotron/commit/%s" thing)))
+               (let ((remote-url (magit-git-string "remote" "get-url" "origin")))
+                 (when (and remote-url (string-match "github\\.com[:/]\\(.+?\\)\\(?:\\.git\\)?$" remote-url))
+                   (browse-url (format "https://github.com/%s/commit/%s"
+                                       (match-string 1 remote-url) thing)))))
               ;; Fallback to magit functions for opening worktree files
               ((and (derived-mode-p 'magit-diff-mode 'magit-revision-mode 'magit-status-mode)
                     (fboundp 'magit-diff-visit-worktree-file))
