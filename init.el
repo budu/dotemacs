@@ -182,9 +182,14 @@ Around advice for FUN with ARGS."
 (setq auto-revert-notify-watch-descriptor-list t)
 (setq auto-revert-interval 0.1)
 
-;;;; Open ~/org/index.org by default on load
+;;;; Open ~/org/index.org by default on load, or magit-status in git repos
 
-(find-file "~/org/index.org")
+(require 'vc-git)
+(if (and (vc-git-root default-directory)
+         (not (string= (expand-file-name default-directory)
+                       (expand-file-name "~/"))))
+    (magit-status)
+  (find-file "~/org/index.org"))
 
 ;;;; backups
 
