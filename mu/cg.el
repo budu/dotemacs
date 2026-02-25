@@ -58,6 +58,22 @@
 
 (define-key mu/cg-map (kbd "i") 'mu/cg/create-incident-todo)
 
+(defun mu/cg/insert-ticket-link (ticket-number)
+  "Insert an org-mode link to the specified TICKET-NUMBER at point."
+  (interactive "nTicket number: ")
+  (insert (format "[[https://cg-project.codegenome.com/projects/49/stories/%d][Ticket #%d]]"
+                  ticket-number ticket-number)))
+
+(define-key mu/cg-map (kbd "T") 'mu/cg/insert-ticket-link)
+
+(defun mu/cg/insert-incident-link (incident-number)
+  "Insert an org-mode link to the specified INCIDENT-NUMBER at point."
+  (interactive "nIncident number: ")
+  (insert (format "[[https://appsignal.com/code-genome/sites/59165566221393096f71ec84/exceptions/incidents/%d/samples/last][Incident #%d]]"
+                  incident-number incident-number)))
+
+(define-key mu/cg-map (kbd "I") 'mu/cg/insert-incident-link)
+
 (defun mu/cg/remove-examples-file ()
   "Remove the file spec/examples.txt at the project root using Projectile."
   (interactive)
