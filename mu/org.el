@@ -96,6 +96,33 @@
 (use-package org-appear
   :hook (org-mode . org-appear-mode))
 
+(use-package ox-moderncv
+  :load-path "~/.emacs.d/site-lisp/org-cv/"
+  :init (require 'ox-moderncv))
+
+(use-package ox-awesomecv
+  :load-path "~/.emacs.d/site-lisp/org-cv/"
+  :init (require 'ox-awesomecv))
+
+(defun mu/org/export-awesomecv ()
+  "Export current org file to PDF using AwesomeCV."
+  (interactive)
+  (let ((tex-file (org-export-output-file-name ".tex"))
+        (org-latex-compiler "xelatex")
+        (org-latex-pdf-process
+         '("xelatex -interaction nonstopmode -output-directory %o %f"
+           "xelatex -interaction nonstopmode -output-directory %o %f")))
+    (org-export-to-file 'awesomecv tex-file)
+    (org-latex-compile tex-file)))
+
+(defun mu/org/export-awesomecv-on-save ()
+  "Export to AwesomeCV PDF on save. Add to `after-save-hook' via file-local variables."
+  (when (derived-mode-p 'org-mode)
+    (mu/org/export-awesomecv)))
+
+(with-eval-after-load 'org
+  (define-key mu/org-map (kbd "A") 'mu/org/export-awesomecv))
+
 (defun org-get-tag-face (kwd)
   "Get the right face for a TODO keyword KWD.
 If KWD is a number, get the corresponding match group."
