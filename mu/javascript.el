@@ -22,6 +22,12 @@
   (js2-warn-about-unused-function-arguments t)
   (js2-strict-missing-semi-warning nil))
 
+(use-package typescript-mode
+  :mode ("\\.ts$" . typescript-mode)
+  :hook (typescript-mode . eglot-ensure)
+  :bind (:map typescript-mode-map
+              ("C-c n" . 'eglot-rename)))
+
 (use-package json-mode)
 
 (provide 'mu/javascript)
