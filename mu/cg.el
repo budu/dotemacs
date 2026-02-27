@@ -4,6 +4,13 @@
 
 (require 'org)
 
+(defcustom mu/cg/appsignal-site-id "59165566221393096f71ec84"
+  "AppSignal site ID used for building incident URLs.
+Can be set per-project via .dir-locals.el."
+  :type 'string
+  :group 'mu-cg
+  :safe #'stringp)
+
 (defun mu/cg/create-ticket-todo (ticket-number)
   "Create a TODO entry for the specified TICKET-NUMBER."
   (interactive "nTicket number: ")
@@ -15,7 +22,7 @@
           (let ((template-content (buffer-string)))
             (kill-buffer)
             (org-insert-heading)
-            (insert (format "TODO [[https://cg-project.codegenome.com/projects/49/stories/%d][Ticket #%d]] :ticket:\n"
+            (insert (format "TODO [[https://hub.reservotron.com/tickets/%d][Ticket #%d]] :ticket:\n"
                           ticket-number ticket-number))
             (org-schedule nil today)
             (insert "\n")
@@ -42,8 +49,8 @@
           (let ((template-content (buffer-string)))
             (kill-buffer)
             (org-insert-heading)
-            (insert (format "TODO [[https://appsignal.com/code-genome/sites/59165566221393096f71ec84/exceptions/incidents/%d/samples/last][Incident #%d]] :incident:\n"
-                          incident-number incident-number))
+            (insert (format "TODO [[https://appsignal.com/code-genome/sites/%s/exceptions/incidents/%d/samples/last][Incident #%d]] :incident:\n"
+                          mu/cg/appsignal-site-id incident-number incident-number))
             (org-schedule nil today)
             (insert "\n")
             (let ((template-start (point)))
@@ -61,7 +68,7 @@
 (defun mu/cg/insert-ticket-link (ticket-number)
   "Insert an org-mode link to the specified TICKET-NUMBER at point."
   (interactive "nTicket number: ")
-  (insert (format "[[https://cg-project.codegenome.com/projects/49/stories/%d][Ticket #%d]]"
+  (insert (format "[[https://hub.reservotron.com/tickets/%d][Ticket #%d]]"
                   ticket-number ticket-number)))
 
 (define-key mu/cg-map (kbd "T") 'mu/cg/insert-ticket-link)
@@ -69,10 +76,18 @@
 (defun mu/cg/insert-incident-link (incident-number)
   "Insert an org-mode link to the specified INCIDENT-NUMBER at point."
   (interactive "nIncident number: ")
-  (insert (format "[[https://appsignal.com/code-genome/sites/59165566221393096f71ec84/exceptions/incidents/%d/samples/last][Incident #%d]]"
-                  incident-number incident-number)))
+  (insert (format "[[https://appsignal.com/code-genome/sites/%s/exceptions/incidents/%d/samples/last][Incident #%d]]"
+                  mu/cg/appsignal-site-id incident-number incident-number)))
 
 (define-key mu/cg-map (kbd "I") 'mu/cg/insert-incident-link)
+
+(defun mu/cg/insert-pr-link (pr-number)
+  "Insert an org-mode link to the specified PR-NUMBER at point."
+  (interactive "nPR number: ")
+  (insert (format "[[https://github.com/codegenome/reservotron/pull/%d][PR #%d]]"
+                  pr-number pr-number)))
+
+(define-key mu/cg-map (kbd "l") 'mu/cg/insert-pr-link)
 
 (defun mu/cg/remove-examples-file ()
   "Remove the file spec/examples.txt at the project root using Projectile."
