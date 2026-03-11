@@ -66,12 +66,16 @@
 ;;;; Helper Functions
 
 (defun mu/get-agent-shell-buffer ()
-  "Get the most recent agent-shell buffer, or nil if none exists."
-  (let ((agent-buffers (seq-filter (lambda (buf)
-                                     (with-current-buffer buf
-                                       (derived-mode-p 'agent-shell-mode)))
-                                   (buffer-list))))
-    (car (last agent-buffers))))
+  "Get the most recent agent-shell buffer for the current project.
+Falls back to any agent-shell buffer if none match the project."
+  (let ((project-buffers (agent-shell-project-buffers)))
+    (if project-buffers
+        (get-buffer (car project-buffers))
+      ;; Fallback: any agent-shell buffer, most recent first
+      (seq-find (lambda (buf)
+                  (with-current-buffer buf
+                    (derived-mode-p 'agent-shell-mode)))
+                (buffer-list)))))
 
 (defun mu/agent-shell-send-region-internal (buffer start end)
   "Send region from START to END to agent-shell BUFFER.
