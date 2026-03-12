@@ -173,9 +173,25 @@ The region content is sent as a prompt without any formatting or metadata."
           (set-window-point window (point))))))
   buffer)
 
+(defun mu/agent-shell--next-buffer ()
+  "Cycle to the next agent-shell buffer.
+Buffers are ordered by name descending (Agent<2>, Agent<1>, Agent),
+wrapping around at the end."
+  (let* ((all (seq-filter (lambda (buf)
+                            (with-current-buffer buf
+                              (derived-mode-p 'agent-shell-mode)))
+                          (buffer-list)))
+         (sorted (sort all (lambda (a b)
+                             (string> (buffer-name a) (buffer-name b)))))
+         (current (current-buffer))
+         (tail (cdr (memq current sorted)))
+         (next (or (car tail) (car sorted))))
+    (when (and next (not (eq next current)))
+      next)))
+
 (defun mu/agent-shell-smart-switch (&optional arg)
   "Smart agent-shell buffer switching:
-- If already in agent-shell buffer and this command was just called, cycle session mode
+- If already in agent-shell buffer, cycle to the next agent-shell buffer
 - If agent-shell buffer exists and is displayed, switch to that window
 - If agent-shell buffer exists but not displayed, switch to it and go to end
 - If no agent-shell buffer exists, create one and go to end
@@ -185,12 +201,13 @@ With prefix ARG (such as using `C-u`), always start a new agent shell via
 `agent-shell`, allowing you to select the agent."
   (interactive "P")
   (cond
-   ;; If we're already in an agent-shell buffer and this command was just called,
-   ;; cycle the session mode instead of switching
+   ;; If we're already in an agent-shell buffer, cycle to the next one
    ((and (not arg)
-         (derived-mode-p 'agent-shell-mode)
-         (eq last-command 'mu/agent-shell-smart-switch))
-    (agent-shell-cycle-session-mode))
+         (derived-mode-p 'agent-shell-mode))
+    (if-let ((next (mu/agent-shell--next-buffer)))
+        (mu/agent-shell--focus-buffer
+         (mu/agent-shell--display-buffer next))
+      (message "No other agent-shell buffers")))
    ;; Otherwise, do the normal smart switch behavior
    (t
     (let* ((force-new arg)
