@@ -28,10 +28,47 @@
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
          ("C-d" . ivy-reverse-i-search-kill))
-  :config (ivy-mode 1))
+  :config
+  (setq ivy-height 15)
+  (ivy-mode 1))
 
 (use-package ivy-rich
   :init (ivy-rich-mode 1))
+
+(setq ibuffer-formats
+      '((mark modified read-only " "
+              (name 30 30 :left :elide)
+              " " (mode 16 16 :left :elide)
+              " " filename-and-process)))
+
+(defun mu/counsel-ibuffer-get-mode (candidate)
+  "Get the major-mode name for a counsel-ibuffer CANDIDATE."
+  (let ((buf (cdr (assoc candidate (ivy-state-collection ivy-last)))))
+    (when buf
+      (replace-regexp-in-string
+       "-mode$" ""
+       (symbol-name (buffer-local-value 'major-mode buf))))))
+
+(defun mu/counsel-ibuffer-transformer (candidate)
+  "Color counsel-ibuffer candidates based on buffer type."
+  (let* ((mode (or (mu/counsel-ibuffer-get-mode candidate) ""))
+         (color (cond
+                 ((string-match-p "claude" mode) "magenta")
+                 ((string-match-p "hub" mode) "violet")
+                 ((string-match-p "magit" mode) "purple")
+                 ((string-match-p "dired" mode) "blue")
+                 ((string-match-p "org" mode) "cyan")
+                 ((string-match-p "\\(shell\\|eat\\|term\\|vterm\\)" mode) "green")
+                 ((string-match-p "\\(compilation\\|rspec\\)" mode) "orange")
+                 ((string-match-p "\\(emacs-lisp\\|ruby\\|slim\\|python\\|javascript\\|clojure\\)" mode) "yellow")
+                 ((string-match-p "^  \\*" candidate) "gray")
+                 (t nil))))
+    (if color
+        (propertize candidate 'face `(:foreground ,color))
+      candidate)))
+
+(ivy-configure 'counsel-ibuffer
+  :display-transformer-fn #'mu/counsel-ibuffer-transformer)
 
 (use-package ivy-posframe
   :after ivy
@@ -39,6 +76,8 @@
   (require 'ivy-overlay nil t)
   (setq ivy-posframe-display-functions-alist '((swiper . ivy-display-function-fallback)
                                                 (t . ivy-posframe-display)))
+  (setq ivy-posframe-height nil)
+  (setq ivy-posframe-width 120)
   (setq ivy-truncate-lines nil)
   (ivy-posframe-mode 1)
   (set-face-attribute 'ivy-posframe nil
