@@ -7,6 +7,7 @@
   ;;   -committerdate : sort by last commit time (descending)
   ;;   -creatordate   : similar, often best for branches/tags
   (setq magit-list-refs-sortby '("-committerdate"))
+  (setq magit-show-long-lines-warning nil)
 
   ;; Open magit-status in the current window
   (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)

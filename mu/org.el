@@ -3,6 +3,8 @@
 ;;; Code:
 
 (with-eval-after-load 'org
+  ;; Suppress org-element cache warnings (known upstream bug with large files)
+  (add-to-list 'warning-suppress-types '(org-element))
   (define-key org-mode-map (kbd "C-<return>") 'mu/open-at-point)
   (define-key org-mode-map (kbd "M-<return>") 'org-insert-heading-respect-content)
   (define-key org-mode-map (kbd "M-S-<return>") 'org-insert-todo-heading-respect-content)
