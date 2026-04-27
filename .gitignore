@@ -31,3 +31,4 @@ eln-cache
 tramp
 copilot-completions.log
 history
+/.agent-shell/
