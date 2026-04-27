@@ -179,8 +179,7 @@ Around advice for FUN with ARGS."
 (setq global-auto-revert-non-file-buffers t)
 (setq auto-revert-verbose nil)
 (setq auto-revert-use-notify t)
-(setq auto-revert-notify-watch-descriptor-list t)
-(setq auto-revert-interval 0.1)
+(setq auto-revert-interval 1)
 
 ;;;; Open ~/org/index.org by default on load, or magit-status in git repos
 
