@@ -17,6 +17,7 @@
 (use-package dockerfile-mode)
 (use-package geiser-racket)
 (use-package lua-mode)
+(use-package terraform-mode)
 (use-package yaml-mode)
 
 (provide 'mu/prog)
