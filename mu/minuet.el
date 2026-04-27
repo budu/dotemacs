@@ -27,6 +27,7 @@
                       (memq char-before-point '(?\s ?\n))))))))
 
 (use-package minuet
+  :disabled t
   :bind
   (("M-y" . #'minuet-complete-with-minibuffer)
    ("M-i" . #'minuet-show-suggestion)
