@@ -13,7 +13,13 @@
   (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
 
   ;; Add custom keybinding for magit-checkout in magit-status-mode
-  (define-key magit-status-mode-map (kbd "`") 'magit-checkout))
+  (define-key magit-status-mode-map (kbd "`") 'magit-checkout)
+
+  ;; Ivy doesn't support completing-read-multiple, so magit's multi-branch
+  ;; reader falls back to a bare minibuffer.  Use the single-branch reader
+  ;; instead (only loses octopus merge multi-select).
+  (advice-add 'magit-read-other-branches-or-commits :override
+              #'magit-read-other-branch-or-commit))
 
 ;; TODO: make it opt-in only
 (defun mu/magit/quicksave ()
@@ -54,45 +60,18 @@
 (global-set-key (kbd "C-x g") 'mu/magit/open-parent)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 
-(defvar mu/magit/index-buffer-keymap
-  (let ((map (make-sparse-keymap)))
-    ;; Bind common navigation/editing keys
-    (define-key map (kbd "RET") 'magit-blob-visit-file)
-    (define-key map (kbd "C-j") 'magit-blob-visit-file)
-    (define-key map (kbd "SPC") 'magit-blob-visit-file)
-    ;; Bind all letters and numbers
-    (let ((chars "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"))
-      (dotimes (idx (length chars))
-        (define-key map (kbd (char-to-string (aref chars idx)))
-          'magit-blob-visit-file)))
-    ;; Bind common punctuation
-    (dolist (key '("." "," ";" ":" "'" "\"" "/" "\\" "-" "_" "=" "+" "*" "&" "%" "$" "#" "@" "!" "?" "<" ">" "[" "]" "{" "}" "(" ")"))
-      (define-key map (kbd key) 'magit-blob-visit-file))
-    map)
-  "Keymap for magit index buffers that redirects most keys to jump to actual file.")
-
-(defun mu/magit/setup-index-buffer-keymap ()
-  "Set up keybindings for magit index buffers to jump to actual file.
-This makes most self-insert keys jump to the actual file for editing."
-  (when (and (boundp 'magit-buffer-revision)
-             magit-buffer-revision
-             (string= magit-buffer-revision "{index}"))
-    ;; Use minor mode map list to override keys even in read-only buffers
-    (setq-local minor-mode-overriding-map-alist
-                (cons (cons 'magit-blob-mode mu/magit/index-buffer-keymap)
-                      minor-mode-overriding-map-alist))))
-
-;; Try using magit-blob-mode-hook instead, which runs after the mode is fully enabled
-(add-hook 'magit-blob-mode-hook 'mu/magit/setup-index-buffer-keymap)
-
 (defun mu/magit/auto-visit-staged-file ()
   "Automatically visit the real file and close blob buffer if viewing staged content.
 Checks if buffer name ends with ~{index}~ which indicates a staged blob."
   (when (and (buffer-name)
              (string-match-p "~{index}~\\'" (buffer-name)))
     (let ((blob-buffer (current-buffer)))
-      (magit-blob-visit-file)
-      (kill-buffer blob-buffer))))
+      (run-at-time 0 nil
+                   `(lambda ()
+                      (when (buffer-live-p ,blob-buffer)
+                        (with-current-buffer ,blob-buffer
+                          (magit-blob-visit-file))
+                        (kill-buffer ,blob-buffer)))))))
 
 (add-hook 'magit-blob-mode-hook 'mu/magit/auto-visit-staged-file)
 
