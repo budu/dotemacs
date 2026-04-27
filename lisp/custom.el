@@ -18,8 +18,8 @@
                org-bullets origami pkg-info poly-markdown projectile-rails
                projectile-ripgrep python-pytest rails-i18n rainbow-delimiters rainbow-mode
                restclient robe rspec-mode rubocop ruby-electric ruby-end rust-mode rvm
-               screenshot scss-mode slim-mode transient-posframe typescript-mode web-mode
-               which-key yaml-mode yari zenburn-theme)))
+               screenshot scss-mode slim-mode terraform-mode transient-posframe
+               typescript-mode web-mode which-key yaml-mode yari zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -34,16 +34,16 @@
  '(org-code ((t (:inherit (shadow fixed-pitch)))))
  '(org-document-info ((t (:foreground "dark orange"))))
  '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
- '(org-document-title ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif" :height 1.4 :underline nil))))
+ '(org-document-title ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans" :height 1.4 :underline nil))))
  '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
- '(org-level-1 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-2 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-3 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-4 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-5 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-6 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-7 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
- '(org-level-8 ((t (:inherit default :weight bold :foreground "white" :family "Sans Serif"))))
+ '(org-level-1 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-2 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-3 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-4 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-5 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-6 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-7 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
+ '(org-level-8 ((t (:inherit default :weight bold :foreground "white" :font "Noto Sans"))))
  '(org-link ((t (:foreground "royal blue" :underline t))))
  '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
  '(org-property-value ((t (:inherit fixed-pitch))))
