@@ -176,25 +176,52 @@ The region content is sent as a prompt without any formatting or metadata."
           (set-window-point window (point))))))
   buffer)
 
+(defun mu/agent-shell--buffers ()
+  "Return live agent shell buffers in most-recently-used order."
+  (seq-filter #'mu/agent-shell--agent-buffer-p (buffer-list)))
+
 (defun mu/agent-shell--next-buffer ()
   "Cycle to the next agent-shell buffer.
-Buffers are ordered by name descending (Agent<2>, Agent<1>, Agent),
-wrapping around at the end."
-  (let* ((all (seq-filter (lambda (buf)
-                            (with-current-buffer buf
-                              (derived-mode-p 'agent-shell-mode)))
-                          (buffer-list)))
-         (sorted (sort all (lambda (a b)
-                             (string> (buffer-name a) (buffer-name b)))))
+Buffers are ordered by most recent use, wrapping around at the end."
+  (let* ((buffers (mu/agent-shell--buffers))
          (current (current-buffer))
-         (tail (cdr (memq current sorted)))
-         (next (or (car tail) (car sorted))))
+         (tail (cdr (memq current buffers)))
+         (next (or (car tail) (car buffers))))
     (when (and next (not (eq next current)))
       next)))
 
+(defun mu/agent-shell--choose-buffer-or-start (buffers target-dir)
+  "Choose among agent shell BUFFERS or start a new one in TARGET-DIR."
+  (let* ((start-label "Start new agent shell...")
+         (buffer-choices
+          (mapcar
+           (lambda (buffer)
+             (let ((status (agent-shell-status :shell-buffer buffer)))
+               (cons
+                (concat (buffer-name buffer)
+                        (pcase status
+                          ('busy (propertize " [busy]" 'face 'warning))
+                          ('blocked (propertize " [blocked]" 'face 'error))
+                          (_ "")))
+                buffer)))
+           buffers))
+         (choices (append (mapcar #'car buffer-choices)
+                          (list start-label)))
+         (choice
+          (minibuffer-with-setup-hook
+              (lambda ()
+                (use-local-map (copy-keymap (current-local-map)))
+                (local-set-key (kbd "<f8>") #'ignore))
+            (completing-read "Agent shell: " choices nil t))))
+    (if (equal choice start-label)
+        (mu/agent-shell--start-interactive-shell target-dir)
+      (mu/agent-shell--display-buffer (cdr (assoc choice buffer-choices))))))
+
 (defun mu/agent-shell-smart-switch (&optional arg)
   "Smart agent-shell buffer switching:
-- If already in agent-shell buffer, cycle to the next agent-shell buffer
+- If already in an agent-shell buffer and more than two exist, select one
+  from a minibuffer prompt or start a new agent shell
+- If already in an agent-shell buffer and at most two exist, cycle to the next
 - If agent-shell buffer exists and is displayed, switch to that window
 - If agent-shell buffer exists but not displayed, switch to it and go to end
 - If no agent-shell buffer exists, create one and go to end
@@ -204,13 +231,19 @@ With prefix ARG (such as using `C-u`), always start a new agent shell via
 `agent-shell`, allowing you to select the agent."
   (interactive "P")
   (cond
-   ;; If we're already in an agent-shell buffer, cycle to the next one
+   ;; From an agent shell, choose when there are several or cycle when there
+   ;; are only one or two.
    ((and (not arg)
          (derived-mode-p 'agent-shell-mode))
-    (if-let ((next (mu/agent-shell--next-buffer)))
-        (mu/agent-shell--focus-buffer
-         (mu/agent-shell--display-buffer next))
-      (message "No other agent-shell buffers")))
+    (let ((buffers (mu/agent-shell--buffers)))
+      (if (> (length buffers) 2)
+          (mu/agent-shell--focus-buffer
+           (mu/agent-shell--choose-buffer-or-start
+            buffers (mu/get-project-dir)))
+        (if-let ((next (mu/agent-shell--next-buffer)))
+            (mu/agent-shell--focus-buffer
+             (mu/agent-shell--display-buffer next))
+          (message "No other agent-shell buffers")))))
    ;; Otherwise, do the normal smart switch behavior
    (t
     (let* ((force-new arg)
