@@ -19,11 +19,13 @@
 
 (custom-set-variables
  '(agent-shell-agent-configs
-   (list (agent-shell-anthropic-make-claude-code-config)
-         (agent-shell-openai-make-codex-config)
+   (list (agent-shell-openai-make-codex-config)
+         (agent-shell-anthropic-make-claude-code-config)
          (agent-shell-google-make-gemini-config)
          (agent-shell-opencode-make-agent-config)
          )))
+
+;; (setq agent-shell-anthropic-default-model-id "default")
 
 (setq agent-shell-anthropic-claude-environment
       (agent-shell-make-environment-variables :inherit-env t))
@@ -157,10 +159,11 @@ The region content is sent as a prompt without any formatting or metadata."
     (mu/agent-shell--display-buffer buffer)))
 
 (defun mu/agent-shell--start-default-shell (target-dir)
-  "Launch a new agent shell using the default anthropic command in TARGET-DIR."
-  (let ((default-directory target-dir))
-    (agent-shell-anthropic-start-claude-code))
-  (when-let ((buffer (mu/agent-shell--resolve-agent-buffer)))
+  "Launch a new agent shell using the first configured agent in TARGET-DIR."
+  (let* ((default-directory target-dir)
+         (config (or (car agent-shell-agent-configs)
+                     (error "No agent config found")))
+         (buffer (agent-shell-start :config config)))
     (mu/agent-shell--display-buffer buffer)))
 
 (defun mu/agent-shell--focus-buffer (buffer)
