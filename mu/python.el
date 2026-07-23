@@ -29,6 +29,7 @@
   :hook
   (python-mode . lsp-deferred)
   :config
+  (setq-default flycheck-checker 'python-ruff)
   (setq python-shell-interpreter "python3"
         python-shell-interpreter-args "-i"))
 
