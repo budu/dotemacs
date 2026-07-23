@@ -94,6 +94,13 @@
 (define-key mu/cg-map (kbd "f") 'mu/send-prompt-block-to-agent-shell)
 (define-key mu/cg-map (kbd "r") 'magit-commit-reword)
 
+(defun mu/reset-mode-line-theme ()
+  "Restore mode-line faces by reapplying the Doom Dracula theme."
+  (interactive)
+  (enable-theme 'doom-dracula))
+
+(define-key mu/cg-map (kbd "R") #'mu/reset-mode-line-theme)
+
 (define-key mu/cg-map (kbd "w")
   (lambda () (interactive)
     (eww-display-html 'utf-8 (buffer-name) nil (point-min) (current-buffer))
