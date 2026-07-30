@@ -17,13 +17,11 @@
 (require 'agent-shell-anthropic)
 (require 'agent-shell-openai)
 
-(custom-set-variables
- '(agent-shell-agent-configs
-   (list (agent-shell-openai-make-codex-config)
-         (agent-shell-anthropic-make-claude-code-config)
-         (agent-shell-google-make-gemini-config)
-         (agent-shell-opencode-make-agent-config)
-         )))
+(setopt agent-shell-agent-configs
+        (list (agent-shell-openai-make-codex-config)
+              (agent-shell-anthropic-make-claude-code-config)
+              (agent-shell-google-make-gemini-config)
+              (agent-shell-opencode-make-agent-config)))
 
 ;; (setq agent-shell-anthropic-default-model-id "default")
 
@@ -35,6 +33,8 @@
 
 (setq agent-shell-openai-authentication
       (agent-shell-openai-make-authentication :login t))
+
+(setopt agent-shell-openai-default-session-mode-id "agent-full-access")
 
 (setq agent-shell-google-authentication
       (agent-shell-google-make-authentication :login t))
