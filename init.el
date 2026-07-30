@@ -23,10 +23,13 @@
 (define-prefix-command 'mu/cg-map)
 (global-set-key (kbd "C-c g") 'mu/cg-map)
 
+(setq custom-file (expand-file-name "lisp/custom.el" user-emacs-directory))
+
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (add-to-list 'load-path "~/.emacs.d/lisp/emacs-libyaml/")
 
 (require 'package)
+(load custom-file 'noerror)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
@@ -125,9 +128,6 @@ If in nb-notes subdirectory, first navigate to parent before finding project roo
 (tooltip-mode -1)                    ; disable tooltips
 
 ;;;; personal preference
-
-(setq custom-file (expand-file-name "~/.emacs.d/lisp/custom.el"))
-(require 'custom)
 
 (setq-default
  fill-column 92

@@ -4,9 +4,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(agent-shell-agent-configs
-   (list (agent-shell-anthropic-make-claude-code-config) (agent-shell-openai-make-codex-config)
-         (agent-shell-google-make-gemini-config) (agent-shell-opencode-make-agent-config)))
  '(package-selected-packages
    '(adoc-mode agent-shell all-the-icons asdf blacken buttercup cider claude-code
                clojure-ts-mode coffee-mode company-box copilot counsel-projectile
@@ -52,7 +49,5 @@
  '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8 :background "#103b66"))))
  '(org-verbatim ((t (:inherit (shadow fixed-pitch)))))
  '(rainbow-delimiters-depth-1-face ((t (:foreground "#444444")))))
-
-(provide 'custom)
 
 ;;; custom.el ends here
