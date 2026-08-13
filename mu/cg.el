@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'org)
+(require 'subr-x)
 
 (defcustom mu/cg/appsignal-site-id "59165566221393096f71ec84"
   "AppSignal site ID used for building incident URLs.
@@ -11,29 +12,34 @@ Can be set per-project via .dir-locals.el."
   :group 'mu-cg
   :safe #'stringp)
 
+(defun mu/cg/render-template (template-file tags)
+  "Render TEMPLATE-FILE after replacing TAGS.
+TAGS is an alist whose keys are strings and whose values are converted to
+strings.  Trailing whitespace is removed from the rendered template."
+  (let ((template-content
+         (with-temp-buffer
+           (insert-file-contents template-file)
+           (buffer-string))))
+    (dolist (tag tags (string-trim-right template-content))
+      (setq template-content
+            (string-replace (car tag) (format "%s" (cdr tag))
+                            template-content)))))
+
 (defun mu/cg/create-ticket-todo (ticket-number)
   "Create a TODO entry for the specified TICKET-NUMBER."
   (interactive "nTicket number: ")
   (let ((today (format-time-string "%Y-%m-%d"))
         (template-file (expand-file-name "templates/ticket.org")))
     (if (file-exists-p template-file)
-        (progn
-          (find-file template-file)
-          (let ((template-content (buffer-string)))
-            (kill-buffer)
-            (org-insert-heading)
-            (insert (format "TODO [[https://hub.reservotron.com/tickets/%d][Ticket #%d]] :ticket:\n"
+        (let ((template-content
+               (mu/cg/render-template
+                template-file
+                `(("TICKET-NUMBER" . ,ticket-number)))))
+          (org-insert-heading)
+          (insert (format "OPEN [[https://hub.reservotron.com/tickets/%d][Ticket #%d]] :ticket:\n"
                           ticket-number ticket-number))
-            (org-schedule nil today)
-            (insert "\n")
-            (let ((template-start (point)))
-              (insert template-content)
-              (save-excursion
-                (save-restriction
-                  (narrow-to-region template-start (point))
-                  (goto-char template-start)
-                  (while (search-forward "NUMBER" nil t)
-                    (replace-match (number-to-string ticket-number) t t)))))))
+          (org-schedule nil today)
+          (insert "\n" template-content))
       (message "Template file not found: %s" template-file))))
 
 (define-key mu/cg-map (kbd "t") 'mu/cg/create-ticket-todo)
@@ -44,23 +50,15 @@ Can be set per-project via .dir-locals.el."
   (let ((today (format-time-string "%Y-%m-%d"))
         (template-file (expand-file-name "templates/incident.org")))
     (if (file-exists-p template-file)
-        (progn
-          (find-file template-file)
-          (let ((template-content (buffer-string)))
-            (kill-buffer)
-            (org-insert-heading)
-            (insert (format "TODO [[https://appsignal.com/code-genome/sites/%s/exceptions/incidents/%d/samples/last][Incident #%d]] :incident:\n"
+        (let ((template-content
+               (mu/cg/render-template
+                template-file
+                `(("INCIDENT-NUMBER" . ,incident-number)))))
+          (org-insert-heading)
+          (insert (format "OPEN [[https://appsignal.com/code-genome/sites/%s/exceptions/incidents/%d/samples/last][Incident #%d]] :incident:\n"
                           mu/cg/appsignal-site-id incident-number incident-number))
-            (org-schedule nil today)
-            (insert "\n")
-            (let ((template-start (point)))
-              (insert template-content)
-              (save-excursion
-                (save-restriction
-                  (narrow-to-region template-start (point))
-                  (goto-char template-start)
-                  (while (search-forward "NUMBER" nil t)
-                    (replace-match (number-to-string incident-number) t t)))))))
+          (org-schedule nil today)
+          (insert "\n" template-content))
       (message "Template file not found: %s" template-file))))
 
 (define-key mu/cg-map (kbd "i") 'mu/cg/create-incident-todo)
