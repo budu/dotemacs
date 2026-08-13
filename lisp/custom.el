@@ -5,18 +5,17 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(adoc-mode agent-shell all-the-icons asdf blacken buttercup cider claude-code
-               clojure-ts-mode coffee-mode company-box copilot counsel-projectile
-               crystal-mode csv-mode dap-mode direnv dockerfile-mode doom-modeline
-               doom-themes eat ein elisp-lint ement emmet-mode emojify exec-path-from-shell
-               expand-region flycheck-posframe flyspell-correct-ivy forge geiser-racket
-               golden-ratio gptel grip-mode helpful ivy-posframe ivy-rich js2-mode json-mode
-               keyfreq lsp-ivy lsp-ui lua-mode mastodon minuet multiple-cursors org-appear
-               org-bullets origami pkg-info poly-markdown projectile-rails
-               projectile-ripgrep python-pytest rails-i18n rainbow-delimiters rainbow-mode
-               restclient robe rspec-mode rubocop ruby-electric ruby-end rust-mode rvm
-               screenshot scss-mode slim-mode terraform-mode transient-posframe
-               typescript-mode web-mode which-key yaml-mode yari zenburn-theme)))
+   '(acp adoc-mode agent-shell all-the-icons asdf blacken buttercup cider claude-code
+         clojure-ts-mode coffee-mode company-box copilot counsel-projectile crystal-mode
+         csv-mode dap-mode direnv dockerfile-mode doom-modeline doom-themes eat ein
+         elisp-lint ement emmet-mode emojify exec-path-from-shell expand-region
+         flycheck-posframe flyspell-correct-ivy forge geiser-racket golden-ratio gptel
+         grip-mode helpful ivy-posframe ivy-rich js2-mode json-mode keyfreq lsp-ivy lsp-ui
+         lua-mode mastodon minuet multiple-cursors org-appear org-bullets origami pkg-info
+         poly-markdown projectile-rails projectile-ripgrep python-pytest rails-i18n
+         rainbow-delimiters rainbow-mode restclient robe rspec-mode rubocop ruby-electric
+         ruby-end rust-mode rvm screenshot scss-mode shell-maker slim-mode terraform-mode
+         transient-posframe typescript-mode web-mode which-key yaml-mode yari zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
