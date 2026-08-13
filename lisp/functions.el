@@ -229,6 +229,17 @@ The path is calculated relative to the project root, excluding nb-notes director
     (insert "\"#{")
     (goto-char (+ start 1))))
 
+(defun mu/delete-current-buffer-file ()
+  "Removes current buffer and file it's visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (if (and filename (file-exists-p filename))
+        (when (yes-or-no-p (format "Are you sure you want to delete '%s'? " filename))
+          (delete-file filename)
+          (kill-buffer (current-buffer))
+          (message "File '%s' successfully deleted." filename))
+      (message "Buffer '%s' is not visiting a file!" (buffer-name)))))
+
 (provide 'functions)
 
 ;;; functions.el ends here
