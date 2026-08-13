@@ -52,10 +52,9 @@ With C-u, uses counsel-file-jump for fuzzy matching in current directory."
 (defun mu/counsel-projectile-rg-dwim ()
   "Search in parent project, or current directory with C-u."
   (interactive)
-  (if current-prefix-arg
-      (counsel-rg nil default-directory)
-    (let ((default-directory (mu/get-project-dir)))
-      (call-interactively #'counsel-projectile-rg))))
+  (counsel-rg nil (if current-prefix-arg
+                      default-directory
+                    (mu/get-project-dir))))
 
 (global-set-key (kbd "C-S-f") #'mu/counsel-projectile-find-file-dwim)
 (global-set-key (kbd "C-M-S-f") #'mu/counsel-projectile-rg-dwim)
