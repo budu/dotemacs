@@ -1,4 +1,4 @@
-;;; package --- Auto-clean buffers
+;;; package --- Auto-clean buffers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

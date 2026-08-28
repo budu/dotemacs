@@ -1,4 +1,4 @@
-;;; package --- minuet package configuration
+;;; package --- minuet package configuration -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;;   https://github.com/milanglacier/minuet-ai.el
 ;;;   AI-powered code completion with multiple LLM backend support

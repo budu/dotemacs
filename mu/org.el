@@ -1,4 +1,4 @@
-;;; package --- Org-mode helpers
+;;; package --- Org-mode helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

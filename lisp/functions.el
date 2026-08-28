@@ -1,3 +1,5 @@
+;;; functions.el --- Shared helper functions -*- lexical-binding: t; -*-
+
 (defun mu/word-with-underscores-at-point-bounds ()
   "Find the bounds of a word at point, including hyphens and underscores."
   (save-excursion

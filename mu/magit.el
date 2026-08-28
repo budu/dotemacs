@@ -1,4 +1,4 @@
-;;; package --- Magit helpers
+;;; package --- Magit helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

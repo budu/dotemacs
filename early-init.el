@@ -1,4 +1,4 @@
-;;; package --- early init
+;;; package --- early init -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

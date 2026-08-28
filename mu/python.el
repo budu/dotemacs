@@ -1,4 +1,4 @@
-;;; package --- Python setup for Emacs
+;;; package --- Python setup for Emacs -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

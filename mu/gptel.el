@@ -1,4 +1,4 @@
-;;; package --- gptel package configuration and helpers
+;;; package --- gptel package configuration and helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;;   https://github.com/karthink/gptel
 ;;; Code:

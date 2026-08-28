@@ -1,4 +1,4 @@
-;;; package --- CG job-related helpers
+;;; package --- CG job-related helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

@@ -1,4 +1,4 @@
-;;; package --- Helpers for I18n
+;;; package --- Helpers for I18n -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

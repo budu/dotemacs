@@ -1,4 +1,4 @@
-;;; package --- Project related helpers
+;;; package --- Project related helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 

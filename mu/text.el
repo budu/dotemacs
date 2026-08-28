@@ -1,4 +1,4 @@
-;;; package --- Helpers for text manipulation
+;;; package --- Helpers for text manipulation -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
