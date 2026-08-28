@@ -21,6 +21,15 @@
 
 (use-package doom-themes
   :init (load-theme 'doom-dracula t)
+  ;; Emacs 31 makes `gnus-group-news-low' inherit from its "empty"
+  ;; counterpart.  Doom themes currently specify the reverse inheritance,
+  ;; which creates a cycle as soon as Gnus faces are loaded (for example,
+  ;; while Counsel is building the M-x candidate list).
+  (when (version<= "31" emacs-version)
+    (custom-theme-set-faces
+     'doom-dracula
+     '(gnus-group-news-low-empty
+       ((t (:inherit gnus-group-mail-1-empty :weight normal))))))
   (custom-set-faces
    '(default ((t (:background "#121a1e"))))))
 
