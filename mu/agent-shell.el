@@ -24,6 +24,16 @@ Set to nil to show session titles without truncation."
                  (const :tag "No limit" nil))
   :group 'agent-shell)
 
+(defcustom mu/agent-shell-session-list-worktree-roots
+  '("~/cg/reservotron")
+  "Main Git checkouts whose worktree sessions should be listed together.
+
+Each entry names the main checkout.  When a session list is requested from
+that checkout or from a sibling named PROJECT.NUMBER.BRANCH, all registered
+worktrees for the repository are sent to the agent as additional roots."
+  :type '(repeat directory)
+  :group 'agent-shell)
+
 (defun mu/agent-shell--session-title (acp-session)
   "Return the display title for ACP-SESSION.
 Limit it to `mu/agent-shell-session-title-width' display columns."
@@ -32,6 +42,86 @@ Limit it to `mu/agent-shell-session-title-width' display columns."
         (truncate-string-to-width
          title mu/agent-shell-session-title-width nil nil "...")
       title)))
+
+(defun mu/agent-shell--worktree-family-p (directory main-root)
+  "Return non-nil when DIRECTORY belongs to MAIN-ROOT's worktree family."
+  (let* ((directory (directory-file-name (expand-file-name directory)))
+         (main-root (directory-file-name (expand-file-name main-root)))
+         (directory-parent (file-name-directory directory))
+         (main-parent (file-name-directory main-root))
+         (directory-name (file-name-nondirectory directory))
+         (main-name (file-name-nondirectory main-root)))
+    (and (equal directory-parent main-parent)
+         (string-match-p
+          (format "\\`%s\\(?:\\.[[:digit:]]+\\..+\\)?\\'"
+                  (regexp-quote main-name))
+          directory-name))))
+
+(defun mu/agent-shell--configured-worktree-root (directory)
+  "Return the configured main checkout matching DIRECTORY, or nil."
+  (when-let* ((project-root (locate-dominating-file directory ".git")))
+    (seq-find (lambda (main-root)
+                (mu/agent-shell--worktree-family-p project-root main-root))
+              mu/agent-shell-session-list-worktree-roots)))
+
+(defun mu/agent-shell--git-worktree-roots (directory)
+  "Return registered Git worktree roots for DIRECTORY.
+Return nil when DIRECTORY is not a Git checkout or Git cannot list its
+worktrees."
+  (unless (file-remote-p directory)
+    (condition-case nil
+        (with-temp-buffer
+          (let ((coding-system-for-read 'utf-8-unix)
+                (default-directory (file-name-as-directory directory)))
+            (when (zerop (process-file
+                          "git" nil t nil "-C" directory
+                          "worktree" "list" "--porcelain" "-z"))
+              (delete-dups
+               (delq nil
+                     (mapcar
+                      (lambda (field)
+                        (when (string-prefix-p "worktree " field)
+                          (let ((root (directory-file-name
+                                       (substring field (length "worktree ")))))
+                            (when (file-directory-p root)
+                              root))))
+                      (split-string (buffer-string) "\0" t)))))))
+      (error nil))))
+
+(defun mu/agent-shell--session-list-worktree-roots (cwd)
+  "Return additional worktree roots to use for a session list at CWD."
+  (when (mu/agent-shell--configured-worktree-root cwd)
+    (let ((cwd (directory-file-name (expand-file-name cwd))))
+      (seq-remove (lambda (root) (equal root cwd))
+                  (mu/agent-shell--git-worktree-roots cwd)))))
+
+(defun mu/agent-shell--decorate-session-list-request (request)
+  "Add configured Git worktrees to a session/list ACP REQUEST."
+  (if (not (equal (map-elt request :method) "session/list"))
+      request
+    (let* ((params (map-elt request :params))
+           (cwd (map-elt params 'cwd))
+           (worktree-roots (and cwd
+                                (mu/agent-shell--session-list-worktree-roots
+                                 cwd))))
+      (if (null worktree-roots)
+          request
+        (let* ((meta (if (listp (map-elt params '_meta))
+                         (copy-tree (map-elt params '_meta))
+                       nil))
+               (additional-roots
+                (delete-dups
+                 (append (append (map-elt meta 'additionalRoots) nil)
+                         worktree-roots)))
+               (meta (cons (cons 'additionalRoots (vconcat additional-roots))
+                           (assq-delete-all 'additionalRoots meta)))
+               (params (cons (cons '_meta meta)
+                             (assq-delete-all '_meta (copy-tree params)))))
+          (cons (cons :params params)
+                (assq-delete-all :params (copy-tree request))))))))
+
+(setopt agent-shell-outgoing-request-decorator
+        #'mu/agent-shell--decorate-session-list-request)
 
 (setopt agent-shell-agent-configs
         (list (agent-shell-openai-make-codex-config)
