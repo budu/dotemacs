@@ -32,3 +32,6 @@ tramp
 copilot-completions.log
 history
 /.agent-shell/
+projectile-frecency.eld
+nb-notes/
+bookmarks
