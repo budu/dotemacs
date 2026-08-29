@@ -17,6 +17,22 @@
 (require 'agent-shell-anthropic)
 (require 'agent-shell-openai)
 
+(defcustom mu/agent-shell-session-title-width 100
+  "Maximum display width of session titles in the session picker.
+Set to nil to show session titles without truncation."
+  :type '(choice (integer :tag "Columns")
+                 (const :tag "No limit" nil))
+  :group 'agent-shell)
+
+(defun mu/agent-shell--session-title (acp-session)
+  "Return the display title for ACP-SESSION.
+Limit it to `mu/agent-shell-session-title-width' display columns."
+  (let ((title (or (map-elt acp-session 'title) "Untitled")))
+    (if mu/agent-shell-session-title-width
+        (truncate-string-to-width
+         title mu/agent-shell-session-title-width nil nil "...")
+      title)))
+
 (setopt agent-shell-agent-configs
         (list (agent-shell-openai-make-codex-config)
               (agent-shell-anthropic-make-claude-code-config)
@@ -40,6 +56,8 @@
       (agent-shell-google-make-authentication :login t))
 
 (with-eval-after-load 'agent-shell
+  (advice-add 'agent-shell--session-title
+              :override #'mu/agent-shell--session-title)
   (setq agent-shell-agent-configs
         (mapcar (lambda (cfg)
                   (when (eq (map-elt cfg :identifier) 'opencode)
