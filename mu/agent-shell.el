@@ -1,7 +1,7 @@
 ;;; mu/agent-shell.el --- Agent Shell configuration and helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Configuration and helper functions for agent-shell (Anthropic Claude integration)
+;; Configuration and helper functions for agent-shell integrations
 
 ;;; Code:
 
@@ -15,6 +15,7 @@
 
 (require 'agent-shell)
 (require 'agent-shell-anthropic)
+(require 'agent-shell-antigravity)
 (require 'agent-shell-openai)
 
 (defcustom mu/agent-shell-session-title-width 100
@@ -33,6 +34,25 @@ that checkout or from a sibling named PROJECT.NUMBER.BRANCH, all registered
 worktrees for the repository are sent to the agent as additional roots."
   :type '(repeat directory)
   :group 'agent-shell)
+
+(defcustom mu/agent-shell-antigravity-default-model-id
+  "gemini-3.8-flash-medium"
+  "Model to select when starting an Antigravity agent shell.
+Set this to nil to let the Antigravity ACP server choose its default."
+  :type '(choice (const :tag "Antigravity default" nil)
+                 (string :tag "Model ID"))
+  :group 'agent-shell)
+
+(defun mu/agent-shell-antigravity--add-default-model (config)
+  "Add the configured Antigravity default model to CONFIG."
+  (map-put! config :default-model-id
+            (lambda () mu/agent-shell-antigravity-default-model-id))
+  config)
+
+(unless (advice-member-p #'mu/agent-shell-antigravity--add-default-model
+                         'agent-shell-antigravity-make-agent-config)
+  (advice-add 'agent-shell-antigravity-make-agent-config :filter-return
+              #'mu/agent-shell-antigravity--add-default-model))
 
 (defun mu/agent-shell--session-title (acp-session)
   "Return the display title for ACP-SESSION.
@@ -126,7 +146,7 @@ worktrees."
 (setopt agent-shell-agent-configs
         (list (agent-shell-openai-make-codex-config)
               (agent-shell-anthropic-make-claude-code-config)
-              (agent-shell-google-make-gemini-config)
+              (agent-shell-antigravity-make-agent-config)
               (agent-shell-opencode-make-agent-config)))
 
 ;; (setq agent-shell-anthropic-default-model-id "default")
@@ -142,8 +162,13 @@ worktrees."
 
 (setopt agent-shell-openai-default-session-mode-id "agent-full-access")
 
-(setq agent-shell-google-authentication
-      (agent-shell-google-make-authentication :login t))
+(setq agent-shell-antigravity-authentication
+      (agent-shell-antigravity-make-authentication :login t))
+
+(setopt agent-shell-antigravity-environment
+        (agent-shell-make-environment-variables
+         "ANTIGRAVITY_HARNESS_PATH"
+         (expand-file-name "~/.local/bin/localharness_external")))
 
 (with-eval-after-load 'agent-shell
   (advice-add 'agent-shell--session-title
