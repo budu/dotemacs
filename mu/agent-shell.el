@@ -144,8 +144,8 @@ worktrees."
         #'mu/agent-shell--decorate-session-list-request)
 
 (setopt agent-shell-agent-configs
-        (list (agent-shell-openai-make-codex-config)
-              (agent-shell-anthropic-make-claude-code-config)
+        (list (agent-shell-anthropic-make-claude-code-config)
+              (agent-shell-openai-make-codex-config)
               (agent-shell-antigravity-make-agent-config)
               (agent-shell-opencode-make-agent-config)))
 
