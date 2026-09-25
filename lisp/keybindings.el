@@ -55,7 +55,11 @@
   (define-key agent-shell-mode-map (kbd "C-c C-r") #'agent-shell-rename-buffer))
 (global-set-key (kbd "<f10>")   (lambda () (interactive) (find-file "~/.bashrc")))
 (global-set-key (kbd "<f11>")   (lambda () (interactive) (find-file "~/dotfiles/awesome/.config/awesome/rc.lua")))
-(global-set-key (kbd "<f12>")   (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
+(global-set-key (kbd "<f12>")   (lambda (arg)
+                                  (interactive "P")
+                                  (if arg
+                                      (call-interactively #'mu/load-mu-files)
+                                    (find-file "~/.emacs.d/init.el"))))
 
 (global-set-key (kbd "C-c SPC")    'rspec-toggle-spec-and-target)
 (global-set-key (kbd "C-<return>") 'mu/open-at-point)

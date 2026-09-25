@@ -97,10 +97,16 @@ If in nb-notes subdirectory, first navigate to parent before finding project roo
 (require 'macros)
 (require 'functions)
 
-;; List all files in the mu/ directory
-(let ((mu-dir (concat (file-name-directory (or load-file-name buffer-file-name)) "mu/")))
-  (dolist (file (directory-files mu-dir t "\\.el$"))
-    (load file)))
+;; Load all files in the mu/ directory
+(defun mu/load-mu-files ()
+  "Load (or reload) every file in the mu/ directory."
+  (interactive)
+  (dolist (file (directory-files (expand-file-name "mu/" user-emacs-directory) t "\\.el$"))
+    (load file))
+  (when (called-interactively-p 'any)
+    (message "Reloaded mu/* files")))
+
+(mu/load-mu-files)
 
 ;;;; vars
 
