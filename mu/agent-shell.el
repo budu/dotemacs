@@ -157,6 +157,8 @@ worktrees."
 (setq agent-shell-anthropic-authentication
       (agent-shell-anthropic-make-authentication :login t))
 
+(setopt agent-shell-anthropic-default-session-mode-id "bypassPermissions")
+
 (setq agent-shell-openai-authentication
       (agent-shell-openai-make-authentication :login t))
 
