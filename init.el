@@ -229,8 +229,4 @@ Around advice for FUN with ARGS."
   (add-hook hook
             (lambda () (setq show-trailing-whitespace nil))))
 
-;;;; global key bindings
-
-(require 'keybindings)
-
 ;;; init.el ends here
