@@ -51,6 +51,8 @@
 (global-set-key (kbd "C-<f6>")  'mu/set-personal-notes-target)
 (global-set-key (kbd "<f7>")    'mu/agent-shell-send-prompt-from-notes)
 (global-set-key (kbd "<f8>")    'mu/agent-shell-smart-switch)
+(with-eval-after-load 'agent-shell
+  (define-key agent-shell-mode-map (kbd "C-c C-r") #'agent-shell-rename-buffer))
 (global-set-key (kbd "<f10>")   (lambda () (interactive) (find-file "~/.bashrc")))
 (global-set-key (kbd "<f11>")   (lambda () (interactive) (find-file "~/dotfiles/awesome/.config/awesome/rc.lua")))
 (global-set-key (kbd "<f12>")   (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
