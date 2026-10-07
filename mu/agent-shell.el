@@ -228,6 +228,21 @@ Header rows are left alone so only data rows get extra spacing."
 (advice-add 'agent-shell-markdown--render-table-source :filter-return
             #'mu/agent-shell--space-table-rows)
 
+;;;; Link Handling
+
+(defun mu/agent-shell--remote-url-not-local (parse-local-link url)
+  "Call PARSE-LOCAL-LINK on URL unless URL is a non-file remote URL.
+With `url-handler-mode' on, `file-exists-p' succeeds on http(s) URLs,
+so markdown links would open as raw HTML via `find-file' instead of
+going through `browse-url'."
+  (unless (and (string-match "\\`\\([a-zA-Z][a-zA-Z0-9+.-]*\\)://" url)
+               (not (string-equal-ignore-case (match-string 1 url) "file")))
+    (funcall parse-local-link url)))
+
+(with-eval-after-load 'agent-shell-markdown
+  (advice-add 'agent-shell-markdown--parse-local-link
+              :around #'mu/agent-shell--remote-url-not-local))
+
 ;;;; Transcript Scrubbing
 
 (defun mu/agent-shell-scrub-transcript ()
