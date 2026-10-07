@@ -402,6 +402,33 @@ The region content is sent as a prompt without any formatting or metadata."
        (with-current-buffer buffer
          (derived-mode-p 'agent-shell-mode))))
 
+(defun mu/agent-shell-force-kill (buffer)
+  "Kill agent shell BUFFER even when its kill hooks signal errors.
+Best-effort shutdown of the ACP client, then kill the buffer with
+`kill-buffer-hook' and `kill-buffer-query-functions' disabled."
+  (interactive
+   (list (read-buffer "Force kill agent shell: "
+                      (when (derived-mode-p 'agent-shell-mode) (current-buffer))
+                      t
+                      (lambda (b)
+                        (mu/agent-shell--agent-buffer-p
+                         (get-buffer (if (consp b) (car b) b)))))))
+  (let ((buffer (get-buffer buffer)))
+    (with-current-buffer buffer
+      (let ((client-proc (ignore-errors
+                           (map-elt (map-elt (agent-shell--state) :client)
+                                    :process))))
+        (ignore-errors (agent-shell--cancel-idle-timer))
+        (ignore-errors (agent-shell--shutdown))
+        (when (process-live-p client-proc)
+          (delete-process client-proc)))
+      (when-let* ((proc (get-buffer-process buffer)))
+        (delete-process proc))
+      (ignore-errors (mu/agent-shell-scrub-transcript))
+      (let ((kill-buffer-hook nil)
+            (kill-buffer-query-functions nil))
+        (kill-buffer buffer)))))
+
 (defun mu/agent-shell--ensure-agent-buffer (buffer)
   "Return BUFFER when it is a valid agent shell buffer, else nil."
   (when (mu/agent-shell--agent-buffer-p buffer)
