@@ -192,6 +192,42 @@ worktrees."
   (set-face-attribute 'agent-shell-markdown-table-border nil
                       :inherit '(shadow agent-shell-markdown-table)))
 
+(defcustom mu/agent-shell-table-row-spacing 0.3
+  "Extra space below each table content row, as `line-spacing' accepts.
+A float is a fraction of the frame line height, an integer is pixels.
+Set to nil to disable."
+  :type '(choice (const :tag "None" nil) number)
+  :group 'agent-shell)
+
+(defun mu/agent-shell--mark-table-row-end (render &rest args)
+  "Call RENDER with ARGS, tagging the end of content rows.
+Header rows are left alone so only data rows get extra spacing."
+  (let ((row (apply render args)))
+    (when (and (memq (plist-get args :row-face)
+                     '(agent-shell-markdown-table agent-shell-markdown-table-zebra))
+               (> (length row) 0))
+      (put-text-property (1- (length row)) (length row)
+                         'mu/agent-shell-table-row-end t row))
+    row))
+
+(defun mu/agent-shell--space-table-rows (table)
+  "Add `mu/agent-shell-table-row-spacing' below tagged rows of TABLE."
+  (dotimes (i (length table))
+    (when (and mu/agent-shell-table-row-spacing
+               (> i 0)
+               (eq (aref table i) ?\n)
+               (get-text-property (1- i) 'mu/agent-shell-table-row-end table))
+      (put-text-property i (1+ i) 'line-spacing
+                         mu/agent-shell-table-row-spacing table)))
+  (remove-text-properties 0 (length table)
+                          '(mu/agent-shell-table-row-end nil) table)
+  table)
+
+(advice-add 'agent-shell-markdown--render-table-data-row :around
+            #'mu/agent-shell--mark-table-row-end)
+(advice-add 'agent-shell-markdown--render-table-source :filter-return
+            #'mu/agent-shell--space-table-rows)
+
 ;;;; Transcript Scrubbing
 
 (defun mu/agent-shell-scrub-transcript ()
