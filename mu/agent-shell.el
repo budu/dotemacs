@@ -182,6 +182,16 @@ worktrees."
                   cfg)
                 agent-shell-agent-configs)))
 
+;;;; Table Faces
+
+;; Zebra rows inherit `lazy-highlight' by default, which is far too loud.
+(with-eval-after-load 'agent-shell-markdown
+  (set-face-attribute 'agent-shell-markdown-table-zebra nil
+                      :inherit 'agent-shell-markdown-table
+                      :background "#1a2429")
+  (set-face-attribute 'agent-shell-markdown-table-border nil
+                      :inherit '(shadow agent-shell-markdown-table)))
+
 ;;;; Transcript Scrubbing
 
 (defun mu/agent-shell-scrub-transcript ()
