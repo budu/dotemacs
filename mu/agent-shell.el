@@ -261,6 +261,87 @@ going through `browse-url'."
 
 (add-hook 'kill-buffer-hook #'mu/agent-shell-scrub-transcript)
 
+;;;; Turn Stats in Header
+
+(defvar-local mu/agent-shell--turn-start-time nil
+  "Time when the current turn's prompt was submitted.")
+
+(defvar-local mu/agent-shell--last-turn-stats nil
+  "Alist with :input-tokens, :output-tokens and :duration of the last turn.")
+
+(defun mu/agent-shell--format-duration (seconds)
+  "Format SECONDS as a short duration like 42s, 2m13s or 1h05m."
+  (let ((seconds (round seconds)))
+    (cond
+     ((< seconds 60) (format "%ds" seconds))
+     ((< seconds 3600) (format "%dm%02ds" (/ seconds 60) (% seconds 60)))
+     (t (format "%dh%02dm" (/ seconds 3600) (/ (% seconds 3600) 60))))))
+
+(defun mu/agent-shell--turn-input-tokens (usage)
+  "Return the new input tokens of the turn from USAGE.
+Cache reads are excluded as they re-count the whole context on every
+API call of the turn."
+  (+ (or (map-elt usage :input-tokens) 0)
+     (or (map-elt usage :cached-write-tokens) 0)))
+
+(defun mu/agent-shell--on-input-submitted (_event)
+  "Record the start time of a new turn."
+  (setq mu/agent-shell--turn-start-time (float-time)))
+
+(defun mu/agent-shell--on-turn-complete (event)
+  "Save the token usage and duration of the turn completed by EVENT."
+  (let ((usage (map-nested-elt event '(:data :usage))))
+    (setq mu/agent-shell--last-turn-stats
+          `((:input-tokens . ,(mu/agent-shell--turn-input-tokens usage))
+            (:output-tokens . ,(or (map-elt usage :output-tokens) 0))
+            (:duration . ,(when mu/agent-shell--turn-start-time
+                            (- (float-time) mu/agent-shell--turn-start-time))))))
+  (setq mu/agent-shell--turn-start-time nil)
+  (agent-shell--update-header-and-mode-line))
+
+(defun mu/agent-shell--subscribe-turn-stats ()
+  "Track turn stats in the current agent-shell buffer."
+  (agent-shell-subscribe-to :shell-buffer (current-buffer)
+                            :event 'input-submitted
+                            :on-event #'mu/agent-shell--on-input-submitted)
+  (agent-shell-subscribe-to :shell-buffer (current-buffer)
+                            :event 'turn-complete
+                            :on-event #'mu/agent-shell--on-turn-complete))
+
+(add-hook 'agent-shell-mode-hook #'mu/agent-shell--subscribe-turn-stats)
+
+(defun mu/agent-shell--turn-stats-indicator (state)
+  "Return the last turn stats of STATE's shell buffer, or nil."
+  (when-let* ((shell-buffer (map-elt state :buffer))
+              ((buffer-live-p shell-buffer))
+              (stats (buffer-local-value 'mu/agent-shell--last-turn-stats
+                                         shell-buffer)))
+    (let ((input (map-elt stats :input-tokens))
+          (output (map-elt stats :output-tokens))
+          (duration (map-elt stats :duration)))
+      (string-join
+       (delq nil (list (when (> (+ input output) 0)
+                         (format "%s↑ %s↓"
+                                 (agent-shell--format-number-compact input)
+                                 (agent-shell--format-number-compact output)))
+                       (when duration
+                         (mu/agent-shell--format-duration duration))))
+       " · "))))
+
+(defun mu/agent-shell--add-turn-stats-to-header (make-header-model state &rest args)
+  "Append the last turn stats to the context indicator of the header model.
+MAKE-HEADER-MODEL is called with STATE and ARGS."
+  (let ((model (apply make-header-model state args))
+        (stats (mu/agent-shell--turn-stats-indicator state)))
+    (unless (string-empty-p (or stats ""))
+      (let ((indicator (map-elt model :context-indicator)))
+        (setf (alist-get :context-indicator model)
+              (if indicator (concat indicator " ➤ " stats) stats))))
+    model))
+
+(advice-add 'agent-shell--make-header-model :around
+            #'mu/agent-shell--add-turn-stats-to-header)
+
 ;;;; Helper Functions
 
 (defun mu/get-agent-shell-buffer ()
