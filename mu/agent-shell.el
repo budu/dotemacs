@@ -228,6 +228,27 @@ Header rows are left alone so only data rows get extra spacing."
 (advice-add 'agent-shell-markdown--render-table-source :filter-return
             #'mu/agent-shell--space-table-rows)
 
+;;;; Numbered Headers
+
+(defun mu/agent-shell--header-line-p (pos)
+  "Return non-nil when POS carries an `agent-shell-markdown-header-N' face."
+  (seq-some (lambda (face)
+              (and (symbolp face)
+                   (string-prefix-p "agent-shell-markdown-header-"
+                                    (symbol-name face))))
+            (ensure-list (get-text-property pos 'face))))
+
+(defun mu/agent-shell--skip-header-list-line (render &rest args)
+  "Call RENDER with ARGS unless the line is an already rendered header.
+Headers are rendered before lists and lose their `#', so `# 1. Title'
+would be restyled as an ordered list item and have the blank line
+below it collapsed."
+  (unless (mu/agent-shell--header-line-p (plist-get args :line-start))
+    (apply render args)))
+
+(advice-add 'agent-shell-markdown--render-list-line :around
+            #'mu/agent-shell--skip-header-list-line)
+
 ;;;; Link Handling
 
 (defun mu/agent-shell--remote-url-not-local (parse-local-link url)
